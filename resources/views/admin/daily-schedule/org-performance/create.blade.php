@@ -22,6 +22,7 @@
                 <div class="py-lg-4 col-md-10 col-lg-6">
 
                     @foreach ($labels as $label)
+                      @if(auth()->user()->roles()->first() && in_array(auth()->user()->roles()->first()->name,explode(',',$label->role)) || auth()->user()->roles()->first() && in_array(auth()->user()->roles()->first()->name,['admin','developer']))
                         <div class="form-group">
                             {{ Form::label( $label->id, $label->label) }}
                             {{ Form::text( $label->id, null, array('class' => 'form-control key_word', 'list' => $label->label, 'autocomplete' => 'false')) }}
@@ -31,6 +32,7 @@
                                 @endforeach
                             </datalist>
                         </div>
+                      @endif
                     @endforeach
                     
                 </div>

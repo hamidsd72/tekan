@@ -24,18 +24,24 @@ class CategoryController extends Controller {
         elseif ('single') return 'دسته بندی';
     }
 
-    public function __construct() { $this->middleware(['auth',]); }
-
-    public function index() {
-        $items = Category::all();
-        return view('admin.category.index', compact('items'), ['title1' => $this->controller_title('single'), 'title2' => $this->controller_title('sum')]);
+    public function __construct() {
+        $this->middleware('permission:product_category_list', ['only' => ['index','show']]);
+        $this->middleware('permission:product_category_create', ['only' => ['create','store']]);
+        $this->middleware('permission:product_category_edit', ['only' => ['edit','update']]);
+        $this->middleware('permission:product_category_delete', ['only' => ['destroy']]);
     }
 
-
-    public function create() {
-        $categories = Category::all();
-        return view('admin.category.create', compact('categories'), ['title1' => $this->controller_title('single'), 'title2' => $this->controller_title('sum')]);
+    public function show($id) {
+        $status = 'category';
+        if ($id=='برند') $status = 'brand';
+        $items  = Category::where('status', $status)->get();
+        return view('admin.category.index', compact('items','status','id'), ['title1' => ' لیست '.$id.' ها ', 'title2' => $id]);
     }
+
+    // public function create() {
+    //     $categories = Category::all();
+    //     return view('admin.category.create', compact('categories'), ['title1' => $this->controller_title('single'), 'title2' => $this->controller_title('sum')]);
+    // }
 
     public function store(Request $request)
     {
@@ -48,12 +54,13 @@ class CategoryController extends Controller {
                 'name.max' => 'نام دسته بندی نباید بیشتر از 240 کاراکتر باشد',
             ]);
         try {
-            $item = new Category();
-            $item->name = $request->name;
-            $item->parent_id = $request->parent_id;
+            $item               = new Category();
+            $item->name         = $request->name;
+            $item->status       = $request->status;
+            $item->parent_id    = $request->parent_id;
             $item->save();
 
-            return redirect()->route('admin.category.index')->with('flash_message', 'دسته بندی با موفقیت ایجاد شد.');
+            return redirect()->back()->withInput()->with('flash_message', 'دسته بندی با موفقیت ایجاد شد.');
 
         } catch (\Exception $e) {
             return redirect()->back()->withInput()->with('err_message', 'مشکلی در ایجاد دسته بندی بوجود آمده،مجددا تلاش کنید');
@@ -80,16 +87,16 @@ class CategoryController extends Controller {
             ]);
 
 
-        $item = Category::find($id);
+        $item = Category::findOrFail($id);
         try {
-            $item->name = $request->name;
-            $item->parent_id = $request->parent_id;
+            $item->name         = $request->name;
+            $item->parent_id    = $request->parent_id;
+            $item->status       = $request->status;
 
             $item->update();
 
-            return redirect()->back()->with('flash_message', 'دسته بندی با موفقیت ویرایش شد.');
+            return redirect()->route('admin.category.index')->with('flash_message', 'دسته بندی با موفقیت ویرایش شد.');
         } catch (\Exception $e) {
-
             return redirect()->back()->withInput()->with('err_message', 'مشکلی در ویرایش دسته بندی بوجود آمده،مجددا تلاش کنید');
         }
     }

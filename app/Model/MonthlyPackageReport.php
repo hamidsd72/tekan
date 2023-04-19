@@ -25,4 +25,8 @@ class MonthlyPackageReport extends Model {
         return $this->belongsTo('App\Model\MonthlyPackage','package_id');
     }
     
+    public function potential() {
+        return $this->belongsTo('App\Model\Potential','potential_id');
+    }
+
 }

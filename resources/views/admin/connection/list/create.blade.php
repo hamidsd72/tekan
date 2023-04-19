@@ -19,11 +19,12 @@
             </div>
             <div class="col-lg-6">
               <div class="form-group">
-                {{ Form::label('action_type', 'نوع اقدام *') }}
+                {{ Form::label('action_type', 'نوع اقدام') }}
                 <select id="action_type" name="action_type" onchange="changeInput()" class="form-control select2">
-                  <option value="اقدام به فروش" selected>اقدام به فروش</option>
+                  <option value="" selected>___</option>
+                  <option value="اقدام به فروش">اقدام به فروش</option>
                   <option value="اقدام به ورودی">اقدام به ورودی</option>
-                  <option value="اقدام به ارجاعی">اقدام به ارجاعی</option>
+                  {{-- <option value="اقدام به ارجاعی">اقدام به ارجاعی</option> --}}
                   <option value="توسعه ارتباطات">توسعه ارتباطات</option>
                 </select>
               </div>
@@ -43,7 +44,7 @@
             <div class="col-lg-6 d-none" id="action_time">
               <div class="form-group">
                 {{ Form::label('time', 'تاریخ اقدام *') }}
-                {{ Form::text('time',null, array('class' => 'form-control text-left date_p')) }}
+                {{ Form::text('time',null, array('class' => 'form-control text-left date_p1')) }}
               </div>
             </div>
             <div class="col-lg-12">
@@ -67,7 +68,7 @@
       function changeInput() {
           console.log(document.getElementById("action_type").value);
           document.getElementById("action_time").classList.add("d-none");
-          if (document.getElementById("action_type").value == 'توسعه ارتباطات') {
+          if (document.getElementById("action_type").value != '') {
               document.getElementById("action_time").classList.remove("d-none");
           }
       }

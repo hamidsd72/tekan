@@ -14,6 +14,7 @@ class LabelPerformance extends Model {
         "access",
         "label",
         "sort",
+        "role",
         "status", // active , deactive
     ];
 

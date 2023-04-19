@@ -19,33 +19,46 @@
                     </div>
                 </div>
 
+                <div class="pt-lg-4 col-md-10 col-lg-6">
+                    <textarea name="set_name" id="set_name" rows="2" placeholder="اسامی پیشنهادی" class="form-control"></textarea>
+                </div>
+
                 <div class="py-lg-4 col-md-10 col-lg-6">
                     <div class="form-group">
                         {{ Form::label('namesOne', 'گفتگو با محوریت توسعه ارتباطات') }}
-                        {{ Form::text('namesOne', null, array('class' => 'form-control key_word', 'list' => 'one', 'autocomplete' => 'false')) }}
-                        <datalist id="one">
+                        {{ Form::text('namesOne', null, array('class' => 'form-control key_word', 'list' => 'one', 'autocomplete' => 'false', 'id' => 'txt1')) }}
+                        {{-- <datalist id="one">
                             @foreach ($users as $user)
                                 <option value="{{$user->name}}">
                             @endforeach
-                        </datalist>
+                        </datalist> --}}
                     </div>
                     <div class="form-group">
                         {{ Form::label('namesTwo', 'گفتگو با محوریت فروش یا مشتری مداری') }}
-                        {{ Form::text('namesTwo', null, array('class' => 'form-control key_word', 'list' => 'two', 'autocomplete' => 'false')) }}
-                        <datalist id="two">
+                        {{ Form::text('namesTwo', null, array('class' => 'form-control key_word', 'list' => 'two', 'autocomplete' => 'false', 'id' => 'txt2')) }}
+                        {{-- <datalist id="two">
                             @foreach ($users as $user)
                                 <option value="{{$user->name}}">
                             @endforeach
-                        </datalist>
+                        </datalist> --}}
                     </div>
                     <div class="form-group">
                         {{ Form::label('namesTree', 'گفتگو با محوریت شبکه سازی') }}
-                        {{ Form::text('namesTree', null, array('class' => 'form-control key_word', 'list' => 'tree', 'autocomplete' => 'false')) }}
-                        <datalist id="tree">
+                        {{ Form::text('namesTree', null, array('class' => 'form-control key_word', 'list' => 'tree', 'autocomplete' => 'false', 'id' => 'txt3')) }}
+                        {{-- <datalist id="tree">
                             @foreach ($users as $user)
                                 <option value="{{$user->name}}">
                             @endforeach
-                        </datalist>
+                        </datalist> --}}
+                    </div>
+                    <div class="form-group">
+                        {{ Form::label('namesFour', 'گفتگو با محوریت رشد شخصی') }}
+                        {{ Form::text('namesFour', null, array('class' => 'form-control key_word', 'list' => 'four', 'autocomplete' => 'false', 'id' => 'txt4')) }}
+                        {{-- <datalist id="four">
+                            @foreach ($users as $user)
+                                <option value="{{$user->name}}">
+                            @endforeach
+                        </datalist> --}}
                     </div>
                 </div>
                 {{ Form::button('افزودن', array('type' => 'submit', 'class' => 'btn btn-success mx-3')) }}
@@ -56,4 +69,35 @@
   </section>
 @endsection
 @section('js')
+<script>
+    var users   = @json($users);
+    {{-- یافتن لیست نام ها --}}
+    let searchByName = str => users.filter((name) => name.startsWith(str))
+
+    function changeUp() {
+        var txt1    = document.getElementById('txt1').value;
+        var sumLength  = 0;
+        if (txt1.length != sumLength) {
+            console.log(searchByName('حمید'));
+            sumLength = txt1.length;
+        }
+    }
+
+    document.addEventListener("onclick", myFunction);
+
+    function myFunction() {
+        console.log(searchByName('حمید'));
+    }
+    
+</script>
 @endsection
+
+{{-- var users   = @json($users);
+    var set_name= document.getElementById('set_name').value = users;
+    console.log(users, txt1);
+    
+    document.addEventListener("onkeypress", myFunction);
+    
+    function myFunction() {
+        var set_name= document.getElementById('set_name').value = users;
+    } --}}

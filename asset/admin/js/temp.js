@@ -102,3 +102,29 @@ $(document).ready(function () {
 $('.popover-dismiss').popover({
     trigger: 'focus'
 })
+setTimeout(function() { $(".alert").alert('close') }, 10000);
+setTimeout(function() { $(".show_all_notification").addClass('d-none') }, 10000);
+
+
+function number_price(a){
+    $('#pp_price').text(a);
+    $('#pp_price').text(function (e, n) {
+        var lir1= n.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return lir1;
+    })
+}
+
+function number_price2(a){
+    $('#pp_price2').text(a);
+    $('#pp_price2').text(function (e, n) {
+        var lir1= n.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return lir1;
+    })
+}
+
+$('.select_prefix').on('change', function () {
+    var prefix = $(this).find(':selected').attr('data-prefix')
+    $('.prefix_span').text(prefix + '_')
+    var w_prefix = $('.prefix_span').outerWidth();
+    $('.prefix_input').css('padding-left', w_prefix + 'px')
+})

@@ -8,33 +8,41 @@
         <div class="card-body box-profile">
             <div class="row my-0">
 
-              <div class="col-md-6 col-lg-4">
+              <div class="col-md-6 col-lg-3">
                 <div class="form-group">
                   {{ Form::label('first_name', 'نام *') }}
                   {{ Form::text('first_name',$item->user->first_name, array('class' => 'form-control' ,'readonly')) }}
                 </div>
               </div>
     
-              <div class="col-md-6 col-lg-4">
+              <div class="col-md-6 col-lg-3">
                 <div class="form-group">
                   {{ Form::label('last_name', 'نام خانوادگی *') }}
                   {{ Form::text('last_name',$item->user->last_name, array('class' => 'form-control' ,'readonly')) }}
                 </div>
               </div>
 
-              <div class="col-md-6 col-lg-4">
+              <div class="col-md-6 col-lg-3">
                 <div class="form-group">
                   {{ Form::label('mobile', 'نام کاربری *') }} (شماره موبایل)
                   {{ Form::number('mobile',$item->user->mobile, array('class' => 'form-control' ,'readonly')) }}
                 </div>
               </div>
 
-              <hr>
+              <div class="col-md-6 col-lg-3">
+                <div class="form-group">
+                  {{ Form::label('whatsapp', 'شماره موبایل دوم *') }}
+                  {{ Form::number('whatsapp',$item->user->whatsapp, array('class' => 'form-control' ,'readonly')) }}
+                </div>
+              </div>
+              
+            </div>
+            <div class="row my-0 d-none" id="others">
 
               <div class="col-md-8 col-lg-4">
                 <div class="form-group">
                   {{ Form::label('hadaf_gozari_shakhsi', 'هدف گذاری فروش شخصی') }}
-                  {{ Form::select('hadaf_gozari_shakhsi', [''=>'انتخاب کنید','1500000'=>'+1,500,000','3000000'=>'+3,000,000','5000000'=>'+5,000,000','10000000'=>'+10,000,000'], null, array('class' => 'form-control')) }}
+                  {{ Form::select('hadaf_gozari_shakhsi', [''=>'انتخاب کنید','1500000'=>'+1,500,000','3000000'=>'+3,000,000','6000000'=>'+6,000,000','10000000'=>'+10,000,000'], null, array('class' => 'form-control')) }}
                 </div>
               </div>
               
@@ -65,7 +73,7 @@
               <div class="col-md-8 col-lg-4">
                 <div class="form-group">
                   {{ Form::label('hadaf_jam_daramad_mah', 'هدف جمع درآمد') }}
-                  {{ Form::number('hadaf_jam_daramad_mah', null, array('class' => 'form-control','required','digits','onkeyup'=>'number_price(this.value)' )) }}
+                  {{ Form::number('hadaf_jam_daramad_mah', null, array('class' => 'form-control','digits','onkeyup'=>'number_price(this.value)' )) }}
                   <span id="price_span" class="span_p"><span id="pp_price"></span> تومان </span>
                 </div>
               </div>
@@ -229,6 +237,7 @@
       document.getElementById("present_ta_peresent11").classList.add('d-none');
       document.getElementById("present_ta_peresent1text").classList.remove('d-none');
       document.getElementById("present_ta_peresent2").classList.remove('d-none');
+      document.getElementById("others").classList.remove('d-none');
     }
   }
 

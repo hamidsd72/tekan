@@ -6,11 +6,10 @@ use App\Model\Customer;
 use App\Model\ProvinceCity;
 use App\Model\Factor;
 use App\Model\Category;
-use App\Model\Product;
+use App\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
-
 
 class ReportController extends Controller {
 
@@ -20,13 +19,13 @@ class ReportController extends Controller {
     }
 
     public function __construct() {
-        $this->middleware('auth');
+        $this->middleware('permission:user_customer_report_list', ['only' => ['index','showCities']]);
     }
 
     public function index(Request $request, $id=null, $type='single') {
         if ($id===null)      $id = auth()->user()->id;
         if ($type=='single') $list = [$id];
-        else                 $list = getSubUser([$id])[0];
+        else                 $list = getSubUser([$id])[2];
 
         $to_year=g2j(date('Y-m-d'),'Y');
         $from_month=1;
@@ -38,14 +37,14 @@ class ReportController extends Controller {
             if($year<$to_year) $to_month=12;
         }
 
-        $month_arr=[];
-        $new_customer_arr=[];
-        $my_customer_arr=[];
-        $razi_customer_arr=[];
-        $vafadar_customer_arr=[];
-        $havadar_customer_arr=[];
-        $referr_customer_arr=[];
-        $all_customer_arr=[];
+        $month_arr=['شروع'];
+        $new_customer_arr=[0];
+        $my_customer_arr=[0];
+        $razi_customer_arr=[0];
+        $vafadar_customer_arr=[0];
+        $havadar_customer_arr=[0];
+        $referr_customer_arr=[0];
+        $all_customer_arr=[0];
 
         foreach (range($from_month , $to_month) as $m) {
             array_push($month_arr,month_name($m));
@@ -62,6 +61,7 @@ class ReportController extends Controller {
         // استان و تعداد مشتری ها
         $state = [];
         // فروش محصول
+        $product_chart_bar_list     = [];
         $product_chart_bar_names    = [];
         $product_chart_bar_sum_buy  = [];
         // دسته بندی محصولات
@@ -69,13 +69,9 @@ class ReportController extends Controller {
         $category_chart_bar_sum_buy = [];
         
         // فاکتورهای ماه جاری
-        $factors    = Factor::whereIn('user_id',$list)->whereDate('time_en','>',Carbon::parse(j2g($start)))->get();
-
+        $factors    = Factor::where('product_id','!=',null)->whereIn('user_id',$list)->get();
         // مشتری ها
         $customers  = Customer::whereIn('user_id', $list )->get(['id','state_id']);
-        // دسته بندی های محصولات
-        $categories  = Category::all(['id','name']);
-
 
         $total      = $customers->count();
         $states     = $customers->unique('state_id');
@@ -87,27 +83,45 @@ class ReportController extends Controller {
             }
         }
         
-        $products   = $factors->unique('product_id');
-        foreach ($products as $product) {
-            // فروش محصول
-            array_push($product_chart_bar_names, $factors->where('product_id',$product->product_id)->sum('count'));
-            array_push($product_chart_bar_sum_buy, $product->product?$product->product->name:'محصول یافت نشد');
+        // $brands     = $factors->unique('brand_id');
+        $categories = $factors->unique('category_id');
+
+        // if ($brands->count() && $categories->count()) {
+        if ($categories->count()) {
+            foreach ($categories as $cat) {
+                // تغداد دسته این دسته
+                $objs   = $factors->where('category_id',$cat->category_id);
+                $sum    = $objs->sum('count');
+                
+                $category_name  = $cat->product ? $cat->product->category->name: 'یافت نشد';
+                
+                array_push($product_chart_bar_sum_buy, $sum);
+                array_push($product_chart_bar_names, $category_name.'id:('.$cat->id.') ');
+
+                $text   = '';
+                foreach ($objs->unique('brand_id') as $brand) {
+                    // تغداد برند این دسته
+                    $brand_factors  = $objs->where('brand_id',$brand->brand_id)->sum('count');
+                    $brand_name     = $brand->product ? $brand->product->brand->name: 'یافت نشد';
+                    $text           = $text.$brand_name.' %'.intVal( ($brand_factors/$sum) * 100 ).' ____ ';
+                }
+
+                array_push($product_chart_bar_list, $category_name.' : %'.intVal( ($sum/$factors->sum('count')) * 100 ).' / '.$text);
+                $text   = '';
+                
+            }
+
         }
 
-        foreach ($categories as $category) {
-            // دسته بندی ها و تعداد محصولات هر دسته
-            array_push($category_chart_bar_names, $category->products->count());
-            array_push($category_chart_bar_sum_buy, $category->name);
-        }
-
-        return view('admin.customer_bank.report_my.index', compact('start','category_chart_bar_names','category_chart_bar_sum_buy','total','state','product_chart_bar_names','product_chart_bar_sum_buy',
-        'from_month','to_month','year','month_arr','new_customer_arr','my_customer_arr','razi_customer_arr','vafadar_customer_arr','havadar_customer_arr','referr_customer_arr','all_customer_arr'), ['title1' => $this->controller_title('single'), 'title2' => $this->controller_title('sum')]);
+        return view('admin.customer_bank.report_my.index', compact('id','start','total','state','product_chart_bar_list','product_chart_bar_names','product_chart_bar_sum_buy'
+        ,'from_month','to_month','year','month_arr','new_customer_arr','my_customer_arr','razi_customer_arr','vafadar_customer_arr','havadar_customer_arr','referr_customer_arr',
+        'all_customer_arr'), ['title1' => $this->controller_title('single'), 'title2' => $this->controller_title('sum')]);
     }
 
-    public function showCities($slug, $id=null, $type='single') {
+    public function showCities($slug, $id=null, $type='all') {
         if ($id===null)      $id = auth()->user()->id;
         if ($type=='single') $list = [$id];
-        else                 $list = getSubUser([$id])[0];
+        else                 $list = getSubUser([$id])[2];
         
         $state  = ProvinceCity::where('name', $slug)->first();
         if (!$state) return redirect()->back()->withInput()->with('err_message', 'استان یافت نشد');
@@ -118,15 +132,33 @@ class ReportController extends Controller {
 
         foreach ($cities as $item) {
             $count = $customers->where('city_id',$item->id)->count();
-            $item->membersData = $count.' نفر '.intVal(($count*100)/$customers->count()).'%';
+            $item->membersData = $count.' نفر '.intVal(($count*100)/($customers->count()>0?$customers->count():1)).'%';
         }
+        $name   = 'تعداد مشتری';
+        return view('admin.customer_bank.report_my.showCities', compact('name','cities'), ['title1' => $this->controller_title('single'), 'title2' => $this->controller_title('sum').' استان '.$state->name]);
+    }
+    
+    public function showCitiesNew($slug, $id=null, $type='all') {
+        if ($id===null)      $id = auth()->user()->id;
+        if ($type=='single') $list = [$id];
+        else                 $list = getSubUser([$id])[2];
         
-        return view('admin.customer_bank.report_my.showCities', compact('cities'), ['title1' => $this->controller_title('single'), 'title2' => $this->controller_title('sum').' استان '.$state->name]);
+        $state  = ProvinceCity::where('name', $slug)->first();
+        if (!$state) return redirect()->back()->withInput()->with('err_message', 'استان یافت نشد');
+        $cities = $state->children;
+        $users  = User::whereIn('id', $list)->where('state_id',$state->id)->get(['id','city_id']);
+        
+        foreach ($cities as $item) {
+            $count = $users->where('city_id',$item->id)->count();
+            $item->membersData = $count.' نفر '.intVal(($count*100)/ ($users->count()>0?$users->count():1) ).'%';
+        }
+        $name   = 'تعداد سازمان';
+        return view('admin.customer_bank.report_my.showCities', compact('name','cities'), ['title1' => $this->controller_title('single'), 'title2' => $this->controller_title('sum').' استان '.$state->name]);
     }
 
     public function search(Request $request) {
         if ($request->type=='single') $list = [$request->id];
-        else $list = getSubUser([$request->id])[0];
+        else $list = getSubUser([$request->id])[2];
 
         $to_year=g2j(date('Y-m-d'),'Y');
         $from_month=1;
@@ -175,10 +207,10 @@ class ReportController extends Controller {
     public function searchBar(Request $request) {
         $start_date = Carbon::parse(j2g(num2en($request->start_date)));
         $end_date   = Carbon::parse(j2g(num2en($request->end_date)))->addDay();
-        if ($request->type=='single') $list = [$request->id];
-        else $list = getSubUser([$request->id])[0];
+        if ($request->search_type=='single') $list = [$request->id];
+        else $list = getSubUser([$request->id])[2];
 
-        $factors = Factor::whereIn('user_id', $list)->whereBetween('time_en',[$start_date,$end_date])->get(['id','customer_id','product_id','count']);
+        $factors = Factor::where('product_id','!=',null)->whereIn('user_id', $list)->whereBetween('time_en',[$start_date,$end_date])->get();
 
         if ($request->type=='product') {
             // فروش محصول
@@ -215,34 +247,54 @@ class ReportController extends Controller {
                 'chart_bar_sum_buy' => $chart_bar_sum_buy,
             ]);
         } elseif($request->type=='category') {
+            $product_chart_bar_list     = [];
+            $product_chart_bar_names    = [];
+            $product_chart_bar_sum_buy  = [];
+
+            // $products   = $factors->unique('product_id');
+            // foreach ($products as $product) {
+            //     // فروش محصول
+            //     array_push($product_chart_bar_sum_buy, $factors->where('product_id',$product->product_id)->sum('count'));
+            //     array_push($product_chart_bar_names, $product->product?$product->product->category->name:'یافت نشد');
+            //     array_push($product_chart_bar_list, $product->product);
+            // }
             
-            $factors = Factor::whereIn('user_id', $list)->get(['id','product_id','count']);
-            $category_chart_bar_names   = [];
-            $category_chart_bar_sum_buy = [];
+            // return response()->json([
+            //     'chart_bar_names'   => $product_chart_bar_names,
+            //     'chart_bar_sum_buy' => $product_chart_bar_sum_buy,
+            //     'chart_bar_list'    => $product_chart_bar_list,
+            // ]);
 
-            $category = Category::where('name',$request->category_name)->first('id');
+            $brands = $factors->unique('brand_id');
+            if ($brands->count()) {
 
-            if ($category->count()) {
-                $products = Product::where('category_id',$category->id)->whereBetween('created_at',[$start_date,$end_date])->get();
-                if (!$products->count()) {
-                    array_push($category_chart_bar_names, 0);
-                    array_push($category_chart_bar_sum_buy,  'در این بازه محصولی یافت نشد');
+                $brands     = Category::whereIn('id',$brands->pluck('brand_id'))->get(['id','name']);
+                $category   = $factors->unique('category_id');
+
+                foreach ($category as $cat) {
+                    // فروش محصول
+                    $item   = $factors->where('category_id',$cat->category_id);
+                    $brand  = $item->unique('brand_id')->pluck('brand_id');
+                    
+                    $list   = null;
+
+                    array_push($product_chart_bar_sum_buy, $item->sum('count'));
+                    array_push($product_chart_bar_names, $cat->product?$cat->product->category->name:'یافت نشد');
+
+                    foreach ($brand as $li) {
+                        $list = $list.$brands->where('id',$li)->first()->name.' '.num2fa($factors->where('brand_id',$li)->sum('count')).' , ';
+                    }
+
+                    array_push($product_chart_bar_list, $list);
                 }
-            } else {
-                array_push($category_chart_bar_names, 0);
-                array_push($category_chart_bar_sum_buy,  'در این دسته بندی محصولی یافت نشد');
+                
             }
-
-            foreach ($products as $product) {
-                // فروش محصول
-                array_push($category_chart_bar_names, $factors->where('product_id',$product->id)->sum('count'));
-                array_push($category_chart_bar_sum_buy, $product->name);
-            }
-
             return response()->json([
-                'chart_bar_names'   => $category_chart_bar_names,
-                'chart_bar_sum_buy' => $category_chart_bar_sum_buy,
+                'chart_bar_names'   => $product_chart_bar_names,
+                'chart_bar_sum_buy' => $product_chart_bar_sum_buy,
+                'chart_bar_list'    => $product_chart_bar_list,
             ]);
+            
         }
         return false;
     }

@@ -14,7 +14,9 @@ class ReportController extends Controller {
         elseif ('single') return 'گزارشات';
     }
 
-    public function __construct() { $this->middleware('auth'); }
+    public function __construct() {
+        $this->middleware('permission:connection_report_list', ['only' => ['index',]]);
+    }
 
     public function cartCalculate($startOfYear, $endOfYear, $startMonth=1) {
         // زمان شروع
@@ -26,8 +28,8 @@ class ReportController extends Controller {
         if (intVal($start->format('Y')) < intVal(persianStartOfYear()->format('Y'))) $endmonth = 12;
         // شمارنده
         $index = 0;
-        $new_added  = array();
-        $finished   = array();
+        $new_added  = [0];
+        $finished   = [0];
         
         for ( $i = $startMonth; $i <= $endmonth; $i++) {
             // اضافه کردن یک ماه به زمان شروع محاسبه
@@ -51,8 +53,8 @@ class ReportController extends Controller {
     }
 
     public function index() {
-        $chat_data = array();
-        $months    = array();
+        $chat_data = [];
+        $months    = ['شروع'];
         // محاسبه اطلاعات چارت
         $data  = $this->cartCalculate(persianStartOfYear(),persianStartOfYear());
         // گرفتن نام ماه به تعداد لازم
@@ -73,7 +75,7 @@ class ReportController extends Controller {
     public function search(Request $request) {
         try {
             if ($request->query('chart')=='chart') {                
-                $months = array();
+                $months = ['شروع'];
                 // محاسبه اطلاعات چارت
                 $data = $this->cartCalculate(persianStartOfYear($request->query('chart_year')),persianStartOfYear($request->query('chart_year')));
                 // گرفتن نام ماه به تعداد لازم

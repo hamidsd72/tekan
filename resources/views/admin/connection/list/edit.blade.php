@@ -19,11 +19,12 @@
                     </div>
                     <div class="col-lg-6">
                         <div class="form-group">
-                            {{ Form::label('action_type', 'نوع اقدام *') }}
+                            {{ Form::label('action_type', 'نوع اقدام') }}
                             <select id="action_type" name="action_type" onchange="changeInput()" class="form-control select2">
+                                <option value="" @if($item->action_type=='') selected @endif>___</option>
                                 <option value="اقدام به فروش" @if($item->action_type=='اقدام به فروش') selected @endif>اقدام به فروش</option>
                                 <option value="اقدام به ورودی" @if($item->action_type=='اقدام به ورودی') selected @endif>اقدام به ورودی</option>
-                                <option value="اقدام به ارجاعی" @if($item->action_type=='اقدام به ارجاعی') selected @endif>اقدام به ارجاعی</option>
+                                {{-- <option value="اقدام به ارجاعی" @if($item->action_type=='اقدام به ارجاعی') selected @endif>اقدام به ارجاعی</option> --}}
                                 <option value="توسعه ارتباطات" @if($item->action_type=='توسعه ارتباطات') selected @endif>توسعه ارتباطات</option>
                               </select>
                         </div>
@@ -40,10 +41,10 @@
                             {{ Form::select('status', [''=>'___','ختم به فروش'=>'ختم به فروش','ختم به ورودی'=>'ختم به ورودی','ختم به ارجاعی'=>'ختم به ارجاعی','فعلا خیر'=>'فعلا خیر'], null, array('class' => 'form-control select2')) }}
                         </div>
                     </div>
-                    <div class="col-lg-6 {{$item->time?'':'d-none'}}" id="action_time">
+                    <div class="col-lg-6 {{$item->action_type == ''?'d-none':''}}" id="action_time">
                         <div class="form-group">
                             {{ Form::label('time', 'تاریخ اقدام *') }}
-                            {{ Form::text('time',null, array('class' => 'form-control text-left date_p')) }}
+                            {{ Form::text('time',null, array('class' => 'form-control text-left date_p1')) }}
                         </div>
                     </div>
                     <div class="col-lg-12">
@@ -67,7 +68,7 @@
         function changeInput() {
             console.log( document.getElementById("action_type").value );
             document.getElementById("action_time").classList.add("d-none");
-            if (document.getElementById("action_type").value=='توسعه ارتباطات') {
+            if (document.getElementById("action_type").value != '') {
                 document.getElementById("action_time").classList.remove("d-none");
             }
         }

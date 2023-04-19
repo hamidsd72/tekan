@@ -9,21 +9,30 @@
                     <div class="row">
                         <div class="col-lg-6">
                             <div class="form-group">
-                                {{ Form::label('name', '* نام') }}
-                                {{ Form::text('name',null, array('class' => 'form-control')) }}
+                                {{ Form::label('category_id', ' دسته بندی') }}
+                                <select class="form-control select2" id="category_id" name="category_id">
+                                    <option value="" selected>انتخاب کنید</option>
+                                    @foreach($categories->where('status','category') as $category)
+                                        <option value="{{$category->id}}" >{{$category->name}}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                         <div class="col-lg-6">
                             <div class="form-group">
-                                {{ Form::label('category_id', ' دسته بندی') }}
-                                <select class="form-control select2" id="category_id" name="category_id">
+                                {{ Form::label('brand_id', ' برند') }}
+                                <select class="form-control select2" id="brand_id" name="brand_id">
                                     <option value="" selected>انتخاب کنید</option>
-                                    @if($categories->count())
-                                        @foreach($categories as $item)
-                                            <option value="{{$item->id}}">{{$item->name}}</option>
-                                        @endforeach
-                                    @endif
+                                    @foreach($categories->where('status','brand') as $brand)
+                                        <option value="{{$brand->id}}" >{{$brand->name}}</option>
+                                    @endforeach
                                 </select>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                {{ Form::label('name', '* نام') }}
+                                {{ Form::text('name',null, array('class' => 'form-control')) }}
                             </div>
                         </div>
                         <div class="col-lg-6">

@@ -16,7 +16,9 @@
                                     <td> مقدار </td>
                                     <td> تاریخ </td>
                                     {{-- <td> توضیحات </td> --}}
-                                    <td> عملیات </td>
+                                    @can('user_customer_package_delete')
+                                        <td> عملیات </td>
+                                    @endcan
                                 </tr>
                             </thead>
                             <tbody>
@@ -31,9 +33,11 @@
                                             <a href="#" class="popover-dismiss" data-toggle="popover" title="توضیحات"
                                             data-content="{{ $report->description?$report->description:'________' }}">نمایش توضیحات آیتم</a>
                                         </td> --}}
-                                        <td class="text-center">
-                                            <a href="javascript:void(0);" onclick="del_report_row('{{$report->id}}')" class="badge bg-danger" title="حذف"><i class="fa fa-trash"></i> </a>
-                                        </td>
+                                        @can('user_customer_package_delete')
+                                            <td class="text-center">
+                                                <a href="javascript:void(0);" onclick="del_report_row('{{$report->id}}')" class="badge bg-danger" title="حذف"><i class="fa fa-trash"></i> </a>
+                                            </td>
+                                        @endcan
                                     </tr>
                                 @endforeach
                             </tbody>

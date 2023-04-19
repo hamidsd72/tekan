@@ -49,8 +49,10 @@
         </form> --}}
 
         <div class="my-5"></div>
-        <div class="col-12" id="data_new">
-          <canvas style="max-height: 400px;" id="myChart"></canvas>
+        <div class="col-12 chart-scrollable" id="data_new">
+            <div class="frame">
+                <canvas id="myChart"></canvas>
+            </div>
         </div>
 
         {{-- نمودار تعداد فروش هر محصول --}}
@@ -68,9 +70,26 @@
                 </div>
             </div>
         </form> --}}
-        <div class="col-12">
-            <canvas style="max-height: 400px;" id="productChart"></canvas>
+        <div class="col-12 chart-scrollable">
+            <div class="frame">
+                <canvas id="productChart"></canvas>
+            </div>
         </div>
+        @if (isset($product_chart_bar_list))
+            <div class="col-12">
+                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#accardion1" aria-expanded="false" aria-controls="accardion1">
+                    نمایش جزییات چارت</button>
+                <div class="collapse multi-collapse" id="accardion1">
+                    <div class="card card-body">
+                        <ul class="px-4" id="product_chart_bar_list">
+                            @foreach ($product_chart_bar_list as $index => $item)
+                                <li>{{$product_chart_bar_names[$index].' : '.$item}}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        @endif
 
         {{-- <form action="{{route('admin.user-customer-report.search.bar')}}" id="four_form_req" method="get" class="mx-2 pt-5">
             <div class="row bg-cu" style="max-width: 394px;">
@@ -95,8 +114,10 @@
             </div>
         </form> --}}
         {{-- نمودار دسته بندی های محصولات --}}
-        <div class="col-12">
-            <canvas style="max-height: 400px;" id="categoryChart"></canvas>
+        <div class="col-12 chart-scrollable d-none">
+            <div class="frame">
+                <canvas id="categoryChart"></canvas>
+            </div>
         </div>
         
         {{-- نقشه ایران --}}
@@ -439,12 +460,12 @@
     <script>
         var productChart
         
-        const labels3 = @json($product_chart_bar_sum_buy);
+        const labels3 = @json($product_chart_bar_names);
         const data3 = {
             labels: labels3,
             datasets: [{
                 label: 'نمودار فروش هر محصول',
-                data: @json($product_chart_bar_names),
+                data: @json($product_chart_bar_sum_buy),
                 backgroundColor: [
                     'rgba(54, 162, 235, 0.2)',
                 ],
@@ -480,13 +501,13 @@
                     data: $(form).serialize(),
                     success: function (next_data_val) {
                         
-                        const labels3 = next_data_val.product_chart_bar_sum_buy;
+                        const labels3 = next_data_val.product_chart_bar_names;
 
                         const data3 = {
                             labels: labels3,
                             datasets: [{
                                 label: 'نمودار فروش هر محصول',
-                                data: next_data_val.product_chart_bar_names,
+                                data: next_data_val.product_chart_bar_sum_buy,
                                 backgroundColor: [
                                     'rgba(54, 162, 235, 0.2)',
                                 ],

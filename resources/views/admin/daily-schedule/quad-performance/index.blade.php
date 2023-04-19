@@ -5,9 +5,16 @@
     <section class="container-fluid">
         <div class="card res_table">
             <div class="card-header">
-                @if (auth()->user()->id==$id)
-                    <a href="{{route('admin.daily-schedule-quad-performance.create')}}" class="btn btn-primary my-2">افزودن {{$title1}}</a>
-                @endif
+                <div class="float-left">
+                    <a class="btn btn-info my-2" href="{{route('admin.daily-schedule-quad-performance.show',$id)}}">در انتظار</a>
+                    <a class="btn btn-info my-2" href="{{route('admin.quad-performance.custom.show.status',[$id,'deactive'])}}">رد شده</a>
+                    <a class="btn btn-info my-2" href="{{route('admin.quad-performance.custom.show.status',[$id,'active'])}}">تایید شده</a>
+                </div>
+                @can('daily_schedule_4_1_create')
+                    @if (auth()->user()->id==$id)
+                        <a href="{{route('admin.daily-schedule-quad-performance.create')}}" class="btn btn-primary my-2">افزودن {{$title1}}</a>
+                    @endif
+                @endcan
             </div>
             <div class="card-body pt-2">
                 <table class="table table-bordered table-hover mb-2 @if($items->count()) tbl_1 @endif">
@@ -15,54 +22,73 @@
                         <tr>
                             <th>#</th>
                             <th>نوع اقدام</th>
-                            {{-- <th>لیست افراد</th> --}}
                             <th>نام شخص</th>
                             <th>تاریخ</th>
-                            @if(count($items)>0)
-                                <th>عملیات</th>
-                            @endif
+                            @can('daily_schedule_4_1_status')
+                                @if(count($items)>0)
+                                    <th>عملیات</th>
+                                @endif
+                            @endcan
                         </tr>
                     </thead>
                     <tbody>
                             @foreach($items as $index=>$item)
-                                <tr>
+                                <tr @if ($item->status=='pending' && $item->time===null) class="bad" @endif>
                                     <td>{{$index+1}}</td>
                                     <td>{{$item->label}}</td>
-                                    {{-- <td><a href="javascript:void(0)" class="popover-dismiss" data-toggle="popover" title="لیست افراد"
-                                         data-content="{{ $item->name?$item->name:'___' }}">نمایش لیست</a>
-                                    </td> --}}
                                     <td>{{ $item->name?$item->name:'___' }}</td>
                                     <td>
-                                        @if ($item->activate && $item->user_id==auth()->user()->id)
-                                            <form action="{{route('admin.daily-schedule-quad-performance.update',$item->id)}}" method="post" class="d-flex" style="max-width: 200px">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="text" name="time" id="time" value="{{$item->date}}" class="form-control date_p1" style="max-width: 75px">
-                                                <button type="submit" class="btn btn-sm">تغییر تاریخ</button>
-                                            </form>
-                                        @else
-                                            {{$item->date}}
-                                        @endif
+                                        <div class="d-flex">
+                                            @if ($item->activate && $item->user_id==auth()->user()->id)
+                                                @can('daily_schedule_4_1_date')
+                                                    <form action="{{route('admin.daily-schedule-quad-performance.update',$item->id)}}" method="post" class="d-flex ml-1" style="max-width: 200px">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <input type="text" name="date" id="date" value="{{$item->date}}" class="form-control date_p1" style="max-width: 75px">
+                                                        <button type="submit" class="btn btn-sm">تغییر تاریخ</button>
+                                                    </form>
+                                                @endcan
+                                            @else
+                                                {{$item->date}}
+                                            @endif
+
+                                            @if ($item->time)
+                                                {{' زمان اجرا '.$item->time}}
+                                            @else
+                                                @if ($item->status=='pending')
+                                                    @can('daily_schedule_4_1_date')
+                                                        <form action="{{route('admin.daily-schedule-quad-performance.update',$item->id)}}" method="post" class="d-flex mr-2" style="max-width: 200px">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <input type="time" name="time" id="time" value="{{$item->time}}" class="form-control" style="max-width: 120px">
+                                                            <button type="submit" class="btn btn-sm">تنظیم ساعت</button>
+                                                        </form>
+                                                    @endcan
+                                                @endif
+                                            @endif
+                                        </div>
                                     </td>
-                                    <td class="text-center">
-                                        @if ($item->activate && $item->user_id==auth()->user()->id)
-                                            <div class="d-flex">
-                                                <form action="{{route('admin.daily-schedule-quad-performance.update',$item->id)}}" method="post" class="mx-1">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <input type="hidden" name="status" id="status" value="active">
-                                                    <button type="submit" class="btn btn-sm btn-success">تایید</button>
-                                                </form>
-    
-                                                <form action="{{route('admin.daily-schedule-quad-performance.update',$item->id)}}" method="post" class="mx-1">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <input type="hidden" name="status" id="status" value="deactive">
-                                                    <button type="submit" class="btn btn-sm btn-danger">رد</button>
-                                                </form>
-                                            </div>
-                                        @endif
-                                    </td>
+                                    @can('daily_schedule_4_1_status')
+                                        <td class="text-center">
+                                            @if ($item->activate && $item->user_id==auth()->user()->id)
+                                                <div class="d-flex">
+                                                    <form action="{{route('admin.daily-schedule-quad-performance.update',$item->id)}}" method="post" class="mx-1">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <input type="hidden" name="status" id="status" value="active">
+                                                        <button type="submit" class="btn btn-sm btn-success">تایید</button>
+                                                    </form>
+        
+                                                    <form action="{{route('admin.daily-schedule-quad-performance.update',$item->id)}}" method="post" class="mx-1">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <input type="hidden" name="status" id="status" value="deactive">
+                                                        <button type="submit" class="btn btn-sm btn-danger">رد</button>
+                                                    </form>
+                                                </div>
+                                            @endif
+                                        </td>
+                                    @endcan
                                 </tr>
                             @endforeach
                     </tbody>

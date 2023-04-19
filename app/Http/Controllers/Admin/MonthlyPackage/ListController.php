@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 
+
 class ListController extends Controller {
 
     public function controller_title($type) {
@@ -15,7 +16,11 @@ class ListController extends Controller {
         elseif ('single') return 'طرح ها ماهانه';
     }
 
-    public function __construct() { $this->middleware('auth'); }
+    public function __construct() {
+        $this->middleware('permission:month_package_list', ['only' => ['index']]);
+        $this->middleware('permission:month_package_create', ['only' => ['store']]);
+        $this->middleware('permission:month_package_edit', ['only' => ['reload','update']]);
+    }
 
     public function index() {
         $items  = MonthlyPackage::orderBy('status')->get();
@@ -23,14 +28,14 @@ class ListController extends Controller {
         return view('admin.monthly_package.list.index', compact('items','active'), ['title1' => $this->controller_title('single'), 'title2' => $this->controller_title('sum')]);
     }
 
-    public function reload() {
-        $items = MonthlyPackage::where('status', 'active')->orderByDesc('id')->get();
-        foreach ($items as $item) {
-            $item->status = 'pending';
-            $item->update();
-        }
-
-        $reports = MonthlyPackageReport::all();
+    public function reload($id) {
+        // $items = MonthlyPackage::where('status', 'active')->orderByDesc('id')->get();
+        // foreach ($items as $item) {
+        //     $item->status = 'pending';
+        //     $item->update();
+        // }
+        
+        $reports = MonthlyPackageReport::where('package_id', $id)->get();
         foreach ($reports as $item) {
             $item->status = 'deleted';
             $item->update();
@@ -52,14 +57,14 @@ class ListController extends Controller {
         $package = new MonthlyPackage();
 
         try {
-            if ($request->status=='active') $this->reload();
+            // if ($request->status=='active') $this->reload();
             
             $package->title     = $request->title;
             $package->status    = $request->status;
             $package->save();
             return redirect()->back()->withInput()->with('flash_message', ' افزودن آیتم با موفقیت ایجاد شد.');
         } catch (\Exception $e) {
-            dd($e);
+            // dd($e);
             return redirect()->back()->withInput()->with('err_message', 'مشکلی در ایجاد افزودن آیتم بوجود آمده،مجددا تلاش کنید');
         }
     }
@@ -76,8 +81,7 @@ class ListController extends Controller {
             ]);
 
         $package = MonthlyPackage::findOrFail($id);
-        
-        if ($request->status=='active') $this->reload();
+        if ($request->status=='pending') $this->reload($id);
 
         try {
             $package->title     = $request->title;
@@ -85,9 +89,15 @@ class ListController extends Controller {
             $package->update();
             return redirect()->back()->withInput()->with('flash_message', ' افزودن آیتم با موفقیت ایجاد شد.');
         } catch (\Exception $e) {
-            dd($e);
+            // dd($e);
             return redirect()->back()->withInput()->with('err_message', 'مشکلی در ایجاد افزودن آیتم بوجود آمده،مجددا تلاش کنید');
         }
+    }
+
+    public function destroy($id) {
+        $this->reload($id);
+        MonthlyPackage::findOrFail($id)->delete();
+        return redirect()->back()->withInput()->with('flash_message', ' حذف آیتم با موفقیت ایجاد شد.');
     }
 
 }

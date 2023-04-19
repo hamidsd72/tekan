@@ -50,7 +50,7 @@
                         </div>
                         <div class="col-md-6 col-lg-6">
                             <div class="form-group">
-                                {{ Form::label('category_id', '* دسته بندی محصولات') }}
+                                {{ Form::label('category_id', '* برند محصولات') }}
                                 {{ Form::select('category_id' , Illuminate\Support\Arr::pluck($categories,'name','id') , null, array('class' => 'form-control select2')) }}
                             </div>
                         </div>

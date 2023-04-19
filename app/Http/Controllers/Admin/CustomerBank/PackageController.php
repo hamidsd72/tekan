@@ -24,7 +24,13 @@ class PackageController extends Controller {
         return strtr( $input, $replace_pairs );
     }
     
-    public function __construct() { $this->middleware('auth'); }
+    public function __construct() {
+        $this->middleware('permission:user_customer_package_list', ['only' => ['index','show']]);
+        $this->middleware('permission:user_customer_package_create', ['only' => ['create','store']]);
+        $this->middleware('permission:user_customer_package_edit', ['only' => ['edit','update']]);
+        $this->middleware('permission:user_customer_package_delete', ['only' => ['destroy']]);
+        $this->middleware('permission:user_customer_package_sale', ['only' => ['add_package_report','destroy_package_report']]);
+    }
 
     public function index() {
         $items      = Package::where('user_id', auth()->user()->id)->get();
@@ -32,7 +38,7 @@ class PackageController extends Controller {
     }
 
     public function create() {
-        $categories = Category::all();
+        $categories = Category::where('status','brand')->get();
         return view('admin.customer_bank.package.create', compact('categories'), ['title1' => ' افزودن '.$this->controller_title('single'), 'title2' => $this->controller_title('sum')]);
     }
 
@@ -48,13 +54,13 @@ class PackageController extends Controller {
 
     public function store(Request $request) {
         $this->validate($request, [
-//            'name'          => 'required|max:255',
+            //            'name'          => 'required|max:255',
             'product_id'    => 'required|integer',
             'count'         => 'required|integer',
             'description'   => 'max:2550',
         ], [
-//                'name.required'         => 'لطفا عنوان را وارد کنید',
-//                'name.max'              => 'عنوان نباید بیشتر از 240 کاراکتر باشد',
+                //                'name.required'         => 'لطفا عنوان را وارد کنید',
+                //                'name.max'              => 'عنوان نباید بیشتر از 240 کاراکتر باشد',
                 'product_id.required'   => 'لطفا نام محصول را وارد کنید',
                 'product_id.integer'    => 'نام محصول معتبر نیست',
                 'count.required'        => 'لطفا تعداد محصول را وارد کنید',
@@ -64,7 +70,7 @@ class PackageController extends Controller {
         try {
             $item = new Package();
             $item->user_id      = auth()->user()->id;
-//            $item->name         = $request->name;
+            //            $item->name         = $request->name;
             $item->product_id   = $request->product_id;
             $item->count        = $request->count;
             $item->description  = $request->description;
@@ -78,16 +84,16 @@ class PackageController extends Controller {
 
     public function update(Request $request, $id) {
         $this->validate($request, [
-//            'name'          => 'required|max:255',
+            //            'name'          => 'required|max:255',
             'description'   => 'max:2550',
         ], [
-//                'name.required'         => 'لطفا uk,hk را وارد کنید',
-//                'name.max'              => 'uk,hk نباید بیشتر از 240 کاراکتر باشد',
+                //                'name.required'         => 'لطفا uk,hk را وارد کنید',
+                //                'name.max'              => 'uk,hk نباید بیشتر از 240 کاراکتر باشد',
                 'description.max'       => 'توضیحات نباید بیشتر از 2550 کاراتکتر باشد',
             ]);
         $item = Package::where('user_id',auth()->user()->id)->findOrFail($id);
         try {
-//            $item->name         = $request->name;
+            //            $item->name         = $request->name;
             $item->description  = $request->description;
             $item->update();
             return redirect()->route('admin.user-customer-package.index')->with('flash_message', 'آیتم با موفقیت ویرایش شد.');

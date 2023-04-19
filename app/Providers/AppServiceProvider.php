@@ -9,7 +9,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Schema;
 use App\Model\Setting;
 use App\Model\ServiceBuy;
-use App\Model\Potential;
 // use App\Model\Notification;
 use App\Model\OrgPerformance;
 use App\Model\QuadPerformance;
@@ -20,8 +19,8 @@ use App\Model\Visit;
 use App\Model\Network;
 use App\Model\ServiceCat;
 use App\Model\CallRequest;
-use App\User;
-use Livewire;
+use App\Model\Meet;
+// use App\Model\Meet;
 use Illuminate\Support\Facades\Cookie;
 class AppServiceProvider extends ServiceProvider
 {
@@ -53,16 +52,62 @@ class AppServiceProvider extends ServiceProvider
         Carbon::setLocale('fa');
 
         view()->composer('layouts.admin', function ($view) {
+            $next_role  = 'ارتقا به عموم سازمان';
+            $active     = true;
+            if (auth()->user()->request_level) {
+                $active     = false;
+                $next_role  = 'درخواست '.auth()->user()->request_level;
+            }
+            if ( auth()->user()->roles->first() && auth()->user()->request_level===null ) {
+                switch ( auth()->user()->roles->first()->title ) {
+                    case 'عموم سازمان':
+                        $next_role  = 'ارتقا به پشتیبان';
+                        break;
+                    case 'پشتیبان':
+                        $next_role  = 'ارتقا به نماینده';
+                        break;
+                    case 'نماینده':
+                        $next_role  = 'ارتقا به نماینده مستقل';
+                        break;
+                    case 'نماینده مستقل':
+                        $next_role  = 'ارتقا به حامی نقره ای';
+                        break;
+                    case 'حامی نقره ای':
+                        $next_role  = 'ارتقا به حامی طلایی';
+                        break;
+                    case 'حامی طلایی':
+                        $next_role  = 'ارتقا به حامی پلاتین - کارآفرین کوشا';
+                        break;
+                    case 'حامی پلاتین - کارآفرین کوشا':
+                        $next_role  = 'ارتقا به حامی الماس - کارآفرین پویا';
+                        break;
+                    default:
+                        $next_role  = auth()->user()->roles->first()->title;
+                        $active     = false;
+                        break;
+                }
+            }
 
+            $unreadNotifications = auth()->user()->unreadNotifications;
+            // جلسات امروز
+            $meets  = Meet::where('user_id', auth()->id())->where('ready_date', '<', Carbon::now())->pluck('id');
+            // نیاز به ریفکتور دارد
+            // ------------------------------------------------------------- 
             $unreaDailydNotifications       = QuadPerformance::whereIn('id', auth()->user()->unreadNotifications->where('type','App\Notifications\Invoice')
             ->pluck('notifiable_id'))->where('date_en', '<', Carbon::now())->get(['name','date','label']);
 
             $unreaOrgDailydNotifications    = OrgPerformance::whereIn('id', auth()->user()->unreadNotifications->where('type','App\Notifications\OrgInvoice')
             ->pluck('notifiable_id'))->where('date_en', '<', Carbon::now())->get(['name','date','label_id']);
+            // ------------------------------------------------------------- 
 
+            
             $view->with('notifications', auth()->user()->unreadNotifications->count());
+            $view->with('next_role', $next_role);
+            $view->with('active', $active);
             $view->with('unreaDailydNotifications', $unreaDailydNotifications);
             $view->with('unreaOrgDailydNotifications', $unreaOrgDailydNotifications);
+            if ($meets) $view->with('unreaMeetdNotifications', $unreadNotifications->where('type','App\Notifications\Meet')->whereIn('notifiable_id',$meets));
+            $view->with('unreaMeetReportNotifications', $unreadNotifications->where('type','App\Notifications\MeetCreateReport'));
             // $view->with('potential_items', Potential::whereNull('parent_id')->orderBy('sort','asc')->get());
             $view->with('order', ServiceBuy::where('status','pending')->count());
             $view->with('setting', Setting::find(1));

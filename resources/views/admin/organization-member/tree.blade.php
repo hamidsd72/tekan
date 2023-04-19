@@ -112,30 +112,35 @@
                 </li>
             </ul>
         </div>
+
     </section>
-@endsection
-@section('js')
+
+    @endsection
+    @section('js')
     <script>
+                
         function getLine(id) {
 
             var url   = `{{url("/admin/organization-member-tree")}}/${id}`;
+            console.log(url);
             $.ajax({
                 type: "GET",
                 url:  url,
                 success: function(dataVal) {
                     
                     let items = dataVal.items;
+                    let state = dataVal.state;
 
                     if (items.length > 0) {
                         
                         const ul = document.getElementById(`ul${id}`);
-
+                        console.log(items)
                         for (let index = 0; index < items.length; index++) {
                             const item = items[index];
                             ul.insertAdjacentHTML("afterbegin",
                                 `<li>
-                                    <a href="javascript:void(0)" id="item${item.id}" onclick="getLine(${item.id})">${item.fullname} (${item.count}) (${item.kasb_o_kar_kochak_ya_bozorg})</a>
-                                    <ul id=ul${item.id}></ul>
+                                    <a href="javascript:void(0)" id="item${item.id}" onclick="getLine(${item.name})">${item.fullname} (${item.count}) (${item.kasb_o_kar_kochak_ya_bozorg})</a>
+                                    <ul id=ul${item.name}></ul>
                                 </li>`    
                             );
                         }

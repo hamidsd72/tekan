@@ -32,11 +32,11 @@
                         <div class="col-auto mb-3">
                             <div class="mb-2 d-flex">
                                 <h6 id="new_added">{{$new_added}}</h6>
-                                <h6 class="mx-1">: تعداد نفرات اضافه شده به لیست</h6>
+                                <h6 class="mx-1 font-weight-bold">: تعداد نفرات اضافه شده به لیست</h6>
                             </div>
                             <div class="d-flex">
                                 <h6 id="finished">{{$finished}}</h6>
-                                <h6 class="mx-1">: تعداد نفرات اقدام شده از لیست</h6>
+                                <h6 class="mx-1 font-weight-bold">: تعداد نفرات اقدام شده از لیست</h6>
                             </div>
                         </div>
 
@@ -59,8 +59,10 @@
                 </form>
 
                 <div class="my-5"></div>
-                <div class="col-12">
-                    <canvas style="max-height: 400px;" id="myChart"></canvas>
+                <div class="col-12 chart-scrollable">
+                    <div class="frame">
+                        <canvas id="myChart"></canvas>
+                    </div>
                 </div>
                 
             </div>

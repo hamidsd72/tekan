@@ -14,7 +14,7 @@
                                 {{ Form::text('name',null, array('class' => 'form-control', 'required')) }}
                             </div>
                         </div>
-                        <div class="col-lg-6">
+                        {{-- <div class="col-lg-6">
                             <div class="form-group">
                                 {{ Form::label('parent_id', ' دسته مادر') }}
                                 <select class="form-control select2" id="parent_id" name="parent_id">
@@ -26,7 +26,7 @@
                                     @endif
                                 </select>
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
                     {{ Form::button('ویرایش', array('type' => 'submit', 'class' => 'btn btn-success')) }}
                     <a href="{{ URL::previous() }}" class="btn btn-secondary m-0 mx-3">بازگشت</a>

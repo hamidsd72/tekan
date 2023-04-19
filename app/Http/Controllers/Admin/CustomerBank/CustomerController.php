@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Model\ProvinceCity;
 use App\Model\Connection;
 use App\Model\Customer;
+use App\Model\Potential;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -16,13 +17,25 @@ class CustomerController extends Controller {
         elseif ('single') return 'مشتری';
     }
 
-    public function __construct() { $this->middleware('auth'); }
+    public function __construct() {
+        $this->middleware('permission:user_customer_list', ['only' => ['index','show']]);
+        $this->middleware('permission:user_customer_create', ['only' => ['create','store']]);
+        $this->middleware('permission:user_customer_edit', ['only' => ['edit','update','active']]);
+        $this->middleware('permission:user_customer_delete', ['only' => ['destroy']]);
+    }
 
     public function index($id=null ,$type='single') {
         if ($id===null)      $id = auth()->user()->id;
         if ($type=='single') $list = [$id];
-        else                 $list = getSubUser([$id])[0];
-        
+        else                 $list = getSubUser([$id])[2];
+        // برای یافتن مشتریان کاربران غیرفعال
+        $items  = auth()->user()->my_potentials()->get();
+        foreach ($items as $item) {
+            if ($item->user && $item->user->status=='deactive') {
+                array_push($list, $item->name);
+            }
+        }
+        // --------------------------------------------------
         $items = Customer::whereIn('user_id',$list)->get();
         return view('admin.customer_bank.customer.index', compact('items'), ['title1' => $this->controller_title('sum'), 'title2' => $this->controller_title('sum')]);
     }

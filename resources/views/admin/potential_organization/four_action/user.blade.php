@@ -21,7 +21,7 @@
                     <tbody>
                         @foreach($items as $key => $item)
                             <tr>
-                                <td>{{$key}}</td>
+                                <td>{{$key+1}}</td>
                                 <td>@item($item->first_name) @item($item->last_name)</td>
                                 <td>@item($item->mobile?$item->mobile:'__________')</td>
                                 <td>@item($item->email?$item->email:'__________')</td>

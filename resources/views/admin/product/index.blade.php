@@ -6,7 +6,9 @@
     <section class="container-fluid">
         <div class="card res_table">
             <div class="card-header">
-                <a href="{{route('admin.product.create')}}" class="btn btn-primary">افزودن</a>
+                @can('product_create')
+                    <a href="{{route('admin.product.create')}}" class="btn btn-primary">افزودن</a>
+                @endcan
             </div>
             <div class="card-body res_table_in">
                 <table class="table table-bordered table-hover mb-2 @if($items->count()) tbl_1 @endif">
@@ -15,7 +17,10 @@
                             <th># </th>
                             <th>نام </th>
                             <th>دسته بندی</th>
-                            <th>عملیات</th>
+                            <th>برند</th>
+                            @canany(['product_edit','product_delete'])
+                                <th>عملیات</th>
+                            @endcan
                         </tr>
                     </thead>
                     <tbody>
@@ -25,10 +30,17 @@
                                     <td>{{$key}}</td>
                                     <td>{{$item->name}}</td>
                                     <td>{{$item->category ? $item->category->name : 'دسته بندی ندارد'}}</td>
-                                    <td class="text-center">
-                                        <a href="{{route('admin.product.edit',$item->id)}}" class="badge bg-primary ml-1" title="ویرایش"><i class="fa fa-edit"></i> </a>
-                                        <a href="javascript:void(0);" onclick="del_row('{{$item->id}}')" class="badge bg-danger ml-1" title="حذف"><i class="fa fa-trash"></i> </a>
-                                    </td>
+                                    <td>{{$item->brand ? $item->brand->name : 'برند ندارد'}}</td>
+                                    @canany(['product_edit','product_delete'])
+                                        <td class="text-center">
+                                            @can('product_edit')
+                                                <a href="{{route('admin.product.edit',$item->id)}}" class="badge bg-primary ml-1" title="ویرایش"><i class="fa fa-edit"></i> </a>
+                                            @endcan
+                                            {{-- @can('product_delete')
+                                                <a href="javascript:void(0);" onclick="del_row('{{$item->id}}')" class="badge bg-danger ml-1" title="حذف"><i class="fa fa-trash"></i> </a>
+                                            @endcan --}}
+                                        </td>
+                                    @endcan
                                 </tr>
                             @endforeach
                         @else

@@ -16,14 +16,11 @@ class ListController extends Controller {
         elseif ('single') return 'ارتباطات شخصی';
     }
 
-    public function __construct() { $this->middleware('auth'); }
-
-    public function toEnNumber($input) {
-        $replace_pairs = array(
-              '۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4', '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9',
-              '٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4', '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9'
-        );
-        return strtr( $input, $replace_pairs );
+    public function __construct() {
+        $this->middleware('permission:connection_list', ['only' => ['index',]]);
+        $this->middleware('permission:connection_create', ['only' => ['create','store']]);
+        $this->middleware('permission:connection_edit', ['only' => ['edit','update']]);
+        $this->middleware('permission:connection_delete', ['only' => ['destroy']]);
     }
 
     public function index() {
@@ -40,7 +37,7 @@ class ListController extends Controller {
         $this->validate($request, [
             'name'          => 'required|max:250',
             'store_type'    => 'required|max:250',
-            'action_type'   => 'required|max:250',
+            'action_type'   => 'max:250',
             'candidate'     => 'max:250',
             'status'        => 'max:250',
             'time'          => 'max:250',
@@ -66,18 +63,28 @@ class ListController extends Controller {
             $item->action_type  = $request->action_type;
             $item->candidate    = $request->candidate;
             $item->status       = $request->status;
-            $item->time         = $request->time;
             $item->description  = $request->description;
-            $item->time_en      = Carbon::parse(j2g($this->toEnNumber($request->time)));
+            $item->time         = $request->time;
+            $item->time_en      = Carbon::parse(j2g(toEnNumber($request->time)));
             $item->user_id      = auth()->user()->id;
+            
             $item->save();
             
-            if ($item->action_type=='توسعه ارتباطات') {
+            if ($item->action_type!=null && $item->time!=null) {
                 $quad = new QuadPerformance;
                 $quad->user_id      = auth()->user()->id;
                 $quad->name         = $item->name;
-                $quad->label        = 'گفتگو با محوریت توسعه ارتباطات';
-                $quad->label_en     = 'Conversation centered on the development of communication';
+
+                $quad->label        = 'گفتگو با محوریت شبکه سازی';
+                $quad->label_en     = 'networking';
+                if ($item->action_type=="اقدام به فروش") {
+                    $quad->label    =  'گفتگو با محوریت فروش یا مشتری مداری';
+                    $quad->label_en = 'communication';        
+                } elseif ($item->action_type=="توسعه ارتباطات") {
+                    $quad->label        = 'گفتگو با محوریت توسعه ارتباطات';
+                    $quad->label_en     = 'conversation';
+                }
+
                 $quad->item_id      = $item->id;
                 $quad->date         = $item->time;
                 $quad->date_en      = Carbon::parse(j2g(toEnNumber($item->time)));
@@ -112,7 +119,7 @@ class ListController extends Controller {
         $this->validate($request, [
             'name'          => 'required|max:250',
             'store_type'    => 'required|max:250',
-            'action_type'   => 'required|max:250',
+            'action_type'   => 'max:250',
             'candidate'     => 'max:250',
             'status'        => 'max:250',
             'time'          => 'max:250',
@@ -132,19 +139,57 @@ class ListController extends Controller {
             ]);
 
         try {
+            $old_quad   = QuadPerformance::where('user_id', auth()->user()->id)->where('item_id', $item->id)->first();
+            if ($old_quad) {
+                $old_nofify = Notification::where('user_id', auth()->user()->id)->where('type', 'App\Notifications\Invoice')->where('read_at', null)->where('notifiable_id', $old_quad->id)->first();
+                if ($old_nofify) $old_nofify->delete();
+                $old_quad->delete();
+            }
+
             $item->name         = $request->name;
             $item->store_type   = $request->store_type;
             $item->action_type  = $request->action_type;
             $item->candidate    = $request->candidate;
             $item->status       = $request->status;
-            $item->time         = $request->time;
             $item->description  = $request->description;
-            $item->time_en      = Carbon::parse(j2g($this->toEnNumber($request->time)));
+            $item->time         = $request->time;
+            $item->time_en      = Carbon::parse(j2g(toEnNumber($request->time)));
             $item->update();
+
+            if ($item->action_type!=null && $item->time!=null) {
+                $quad = new QuadPerformance;
+                $quad->user_id      = auth()->user()->id;
+                $quad->name         = $item->name;
+
+                $quad->label        = 'گفتگو با محوریت شبکه سازی';
+                $quad->label_en     = 'networking';
+                if ($item->action_type=="اقدام به فروش") {
+                    $quad->label    =  'گفتگو با محوریت فروش یا مشتری مداری';
+                    $quad->label_en = 'communication';        
+                } elseif ($item->action_type=="توسعه ارتباطات") {
+                    $quad->label        = 'گفتگو با محوریت توسعه ارتباطات';
+                    $quad->label_en     = 'conversation';
+                }
+
+                $quad->item_id      = $item->id;
+                $quad->date         = $item->time;
+                $quad->date_en      = Carbon::parse(j2g(toEnNumber($item->time)));
+                $quad->save();
+
+                $text = $quad->label.' : '.$quad->name;
+                
+                Notification::setItem(
+                    "App\Notifications\Invoice",
+                    "App\User",
+                    $quad->id,
+                    ('{"date": "'.$text.'"}')
+                );
+            }
+
             return redirect()->route('admin.connection-list.index')->with('flash_message', ' افزودن آیتم با موفقیت ایجاد شد.');
         } catch (\Exception $e) {
             // dd($e);
-            return redirect()->back()->withInput()->with('err_message', 'مشکلی در ایجاد افزودن آیتم بوجود آمده،مجددا تلاش کنید');
+            return redirect()->back()->withInput()->with('err_message', 'مشکلی در بروزرسانی آیتم بوجود آمده،مجددا تلاش کنید');
         }
     }
 

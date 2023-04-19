@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\DailySchedule;
 use App\Model\QuadPerformance;
 use App\Model\Notification;
 use App\Model\Connection;
+use App\Model\Customer;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
@@ -16,24 +17,39 @@ class QuadPerformanceController extends Controller {
         elseif ('single') return 'عملکرد شخصی ۴×۱';
     }
 
-    public function __construct() { $this->middleware('auth'); }
+    public function __construct() {
+        $this->middleware('permission:daily_schedule_4_1_list', ['only' => ['show',]]);
+        $this->middleware('permission:daily_schedule_4_1_create', ['only' => ['create','store']]);
+        $this->middleware('permission:daily_schedule_4_1_status', ['only' => ['update']]);
+        $this->middleware('permission:daily_schedule_4_1_date', ['only' => ['update']]);
+        $this->middleware('permission:daily_schedule_4_1_delete', ['only' => ['destroy']]);
+    }
 
-    public function show($id) {
+    public function show($id, $status='pending') {
         notificationsQuadReaded();
-        $items = QuadPerformance::where('user_id', $id )->where('status','pending')->orderBy('date_en')->get();
-        foreach ($items as $key => $item) {
-            $item->activate = true;
-            if (Carbon::today()->diffInDays(Carbon::parse($item->date_en), false) > 0) {
-                $item->activate = false;
+
+        $items = QuadPerformance::where('user_id', $id )->where('status',$status)->orderBy('date_en')->get();
+        if ($status=='pending') {
+            foreach ($items as $item) {
+                $item->activate = true;
+                if (Carbon::today()->diffInDays(Carbon::parse($item->date_en), false) > 0) {
+                    $item->activate = false;
+                }
             }
         }
         return view('admin.daily-schedule.quad-performance.index', compact('items','id'), ['title1' => $this->controller_title('single'), 'title2' => $this->controller_title('sum')]);
     }
 
     public function create($step=1) {
-        $today = Carbon::now()->addDay();
-        $time = num2fa(my_jdate($today->subDay($step), 'Y/m/d'));
-        $users  = Connection::where('user_id', auth()->user()->id )->get(['id','name']);
+        $today  = Carbon::now()->addDay();
+        $time   = num2fa(my_jdate($today->subDay($step), 'Y/m/d'));
+        // $conn   = Connection::where('user_id', auth()->user()->id )->get(['id','name']);
+        // $cust   = Customer::where('user_id', auth()->user()->id )->get(['id','name']);
+        $conn   = Connection::where('user_id', auth()->user()->id )->pluck('name');
+        $cust   = Customer::where('user_id', auth()->user()->id )->pluck('name');
+        $users  = [];
+        foreach ($conn as $con) array_push($users, $con);
+        foreach ($cust as $cus) array_push($users, $cus);
         return view('admin.daily-schedule.quad-performance.create' , compact('time','step','users'), ['title1' => $this->controller_title('single').' افزودن ', 'title2' => $this->controller_title('sum').' افزودن ']);
     }
 
@@ -44,7 +60,7 @@ class QuadPerformanceController extends Controller {
         try {
             $date_en = Carbon::parse(j2g(toEnNumber($request->time)));
             
-            for ($i=0; $i < 3; $i++) { 
+            for ($i=0; $i < 4; $i++) { 
 
                 if ($i==0) {
                     $data       = $request->namesOne;
@@ -54,10 +70,14 @@ class QuadPerformanceController extends Controller {
                     $data       = $request->namesTwo;
                     $label      = 'گفتگو با محوریت فروش یا مشتری مداری';
                     $label_en   = 'conversation';
-                } else {
+                } elseif($i==2) {
                     $data       = $request->namesTree;
                     $label      = 'گفتگو با محوریت شبکه سازی';
                     $label_en   = 'networking';
+                } else {
+                    $data       = $request->namesFour;
+                    $label      = 'گفتگو با محوریت رشد شخصی';
+                    $label_en   = 'growth';
                 }
 
                 if ($data!=null) {
@@ -89,7 +109,7 @@ class QuadPerformanceController extends Controller {
             }
             return redirect()->route('admin.daily-schedule-quad-performance.show',auth()->user()->id)->with('flash_message', ' افزودن آیتم با موفقیت ایجاد شد.');
         } catch (\Exception $e) {
-            // dd($e);
+            dd($e);
             return redirect()->back()->withInput()->with('err_message', 'مشکلی در ایجاد افزودن آیتم بوجود آمده،مجددا تلاش کنید');
         }
     }
@@ -109,9 +129,18 @@ class QuadPerformanceController extends Controller {
 
         try {
             if ($request->status) $item->status = $request->status;
+            if ($request->date) {
+                $item->date     = $request->date;
+                $item->date_en  = Carbon::parse(j2g(toEnNumber($request->date)));
+                Notification::setItem(
+                    "App\Notifications\Invoice",
+                    "App\User",
+                    $item->id,
+                    ('{"date": "'.($item->label.' : '.$item->name).'"}')
+                );
+            }
             if ($request->time) {
-                $item->date     = $request->time;
-                $item->date_en  = Carbon::parse(j2g(toEnNumber($request->time)));
+                $item->time     = $request->time;
             }
             $item->update();
             return redirect()->back()->withInput()->with('flash_message', ' ویرایش آیتم با موفقیت انجام شد.');

@@ -27,7 +27,48 @@ use App\Model\Notification;
 use App\Model\Potential;
 use App\Model\ProvinceCity;
 use App\Model\Customer;
-use App\Model\Factor;
+use App\Model\Meet;
+
+if (!function_exists('explode_last')) {
+    function explode_last($item,$joda)
+    {
+        $type = explode($joda, $item);
+        $end = end($type);
+        return $end;
+    }
+}
+
+if (!function_exists('meet_updater')) {
+    function meet_updater() {
+        $items = Meet::where('total','>',0)->where('reply','>',0)->where('addDays','>',0)->where('ready_date','<',Carbon::today())->get();
+        foreach ($items as $item) {
+            $item->total    -= 1;
+            $start_date     = Carbon::parse($item->date);
+            $add            = ($item->reply - $item->total) * $item->addDays;
+            $item->ready_date = $start_date->addDay($add);
+            $item->update();
+
+            Notification::setItem(
+                "App\Notifications\Meet",
+                "App\User",
+                $item->id,
+                ('{"date": "'.$item->slug.'"}')
+            );
+        }
+    }
+}
+
+if (!function_exists('start')) {
+    function start() {
+        return  g2j( Carbon::parse(j2g( g2j(Carbon::today(),'Y/m').'/01' )) ,'Y/m/d');
+    }
+}
+
+if (!function_exists('start_en')) {
+    function start_en() {
+        return Carbon::parse(j2g( g2j(Carbon::today(),'Y/m').'/01' ));
+    }
+}
 
 // motification updated to column read_at equals to null
 if (!function_exists('notificationReadAtNull')) {
@@ -67,24 +108,28 @@ if (!function_exists('notificationsOrgReaded')) {
 if (!function_exists('getSubUser')) {
     // get all potential
     function getSubUser($user) {
-        $list   = $user;
+        $input  = $user;
+        $list   = [];
+        for ($i=0; $i < count($input); $i++) { 
+            array_push($list , intVal($input[$i]));
+        }
         $state  = [];
-        
+        $loop = count($input);
         while (true) {
-            $items  = Potential::whereIn('user_id', $list )->pluck('id');
-            // یافتن همه زیرمجموعه ها
-            for ($i=0; $i < count($items); $i++) { 
-                array_push($list , $items[$i]);
+            $items  = Potential::whereIn('user_id', $input )->get(['id','name']);
+            foreach ($items as $item) {
+                array_push($list , $item->id);
+                array_push($input , $item->name);
             }
             // ذخبره هر سطح
-            array_push($state , $items );
+            array_push($state , $items->pluck('id'));
             // شرط خاتمه
-            if (count($items) < count($list)) {
+            if ($items->count() < $loop) {
                 break;
             }
+            $loop = count($input);
         }
-
-        return [$list,$state];
+        return [$list,$state,$input];
     }
 }
 

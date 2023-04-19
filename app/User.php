@@ -28,6 +28,7 @@ class User extends Authenticatable
         'password',
         'mobile_verified',
         'code_id',
+        'status',
     ];
 
     static $allSubCategoryUsers = [];
@@ -79,12 +80,41 @@ class User extends Authenticatable
     {
         return $this->hasMany('App\Model\Potential','user_id');
     }
+    public function my_potentials1()
+    {
+        return $this->hasMany('App\Model\Potential','user_id')->whereNotIn('present_ta_peresent',[null,'خرید اولیه انجام نشده']);
+    }
 
     public function potential()
     {
         return $this->belongsTo('App\Model\Potential','name');
     }
 
+    public function targets() {
+        return $this->hasMany('App\Model\Target','user_id');
+    }
+
+    public function active_target() {
+        $items  = $this->targets();
+        if ($items->count()) {
+            
+            $targets = $items->where('date','>',start_en());
+            if ($targets->count()) return $targets->first();
+
+            $item = $items->first();
+            if($item){
+                $item->level    = null;
+                $item->personal = null;
+                $item->network  = null;
+                $item->update();
+            }
+           
+
+            return $this->targets()->first();
+        }
+        return null;
+    }
+    
     public function code()
     {
         return $this->hasMany('App\Model\Code', 'user_id');

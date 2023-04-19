@@ -18,6 +18,12 @@ class Product extends Model
     {
         return $this->belongsTo('App\Model\Category', 'category_id');
     }
+
+    public function brand()
+    {
+        return $this->belongsTo('App\Model\Category', 'brand_id');
+    }
+
     public function creator()
     {
         return $this->belongsTo('App\User', 'creator_id');

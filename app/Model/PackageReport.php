@@ -3,24 +3,16 @@
 namespace App\Model;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\File;
 class PackageReport extends Model {
 
+    use SoftDeletes;
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
-    protected $fillable = [
-        "user_id",
-        "package_id",
-        "customer_id",
-        "count",
-        "status",
-        "description",
-        "time",
-        "time_en",
-    ];
 
     public function customer() {
-        return $this->belongsTo('App\Model\Customer','customer_id')->first(['id','name']);
+        return $this->belongsTo('App\Model\Customer','customer_id');
     }
 
 }

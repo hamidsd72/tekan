@@ -300,7 +300,7 @@ class ServiceController extends Controller
             'photo' => 'required|image|mimes:jpeg,jpg,png|max:5120',
             'file' => 'nullable|mimes:pdf|max:30720',
             'video' => 'nullable|mimes:mp4|max:51200',
-        ],
+        ], 
             [
                 'category_id.required' => 'لطفا دسته بندی خدمت را انتخاب کنید',
                 'title.required' => 'لطفا عنوان خدمت را وارد کنید',

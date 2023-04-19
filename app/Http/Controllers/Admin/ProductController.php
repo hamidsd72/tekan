@@ -35,19 +35,21 @@ class ProductController extends Controller
         return $settings->paginate;
     }
 
-    public function __construct()
-    {
-        $this->middleware(['auth','isAdmin']);
+    public function __construct() {
+        $this->middleware('permission:product_list', ['only' => ['index',]]);
+        $this->middleware('permission:product_create', ['only' => ['create','store']]);
+        $this->middleware('permission:product_edit', ['only' => ['edit','update']]);
+        $this->middleware('permission:product_delete', ['only' => ['destroy']]);
     }
 
     public function index()
     {
-        $items = Product::paginate($this->controller_paginate());
+        $items = Product::get();
         return view('admin.product.index', compact('items'), ['title1' => $this->controller_title('sum'), 'title2' => $this->controller_title('sum')]);
     }
 
     public function filter($id) {
-        $products   = Product::where('category_id',$id)->get(['id','name']);
+        $products   = Product::where('category_id',$id)->orWhere('brand_id',$id)->get(['id','name']);
         $photos     = Photo::where('pictures_type','App\Model\Product')->whereIn('pictures_id', $products->pluck('id'))->get(['pictures_id','path']);
         foreach ($products as $product) {
             $product->pic = url('/').'/'.$photos->where('pictures_id', $product->id)->first()->path;
@@ -76,9 +78,10 @@ class ProductController extends Controller
             ]);
         try {
             $item = new Product();
-            $item->name = $request->name;
-            $item->category_id = $request->category_id;
-            $item->creator_id = auth()->user()->id;
+            $item->name         = $request->name;
+            $item->category_id  = $request->category_id;
+            $item->brand_id     = $request->brand_id;
+            $item->creator_id   = auth()->user()->id;
             $item->save();
 
             if ($request->hasFile('photo')) {
@@ -119,8 +122,9 @@ class ProductController extends Controller
 
         $item = Product::find($id);
         try {
-            $item->name = $request->name;
-            $item->category_id = $request->category_id;
+            $item->name         = $request->name;
+            $item->brand_id     = $request->brand_id;
+            $item->category_id  = $request->category_id;
 
             $item->update();
             if ($request->hasFile('photo')) {
@@ -133,7 +137,7 @@ class ProductController extends Controller
                 $photo->path = file_store($request->photo, 'source/asset/uploads/product/' . my_jdate(date('Y/m/d'), 'Y-m-d') . '/photos/', 'photo-');;
                 $item->photo()->save($photo);
             }
-            return redirect()->back()->with('flash_message', 'محصول با موفقیت ویرایش شد.');
+            return redirect()->route('admin.product.index')->with('flash_message', 'محصول با موفقیت ویرایش شد.');
         } catch (\Exception $e) {
 
             return redirect()->back()->withInput()->with('err_message', 'مشکلی در ویرایش محصول بوجود آمده،مجددا تلاش کنید');

@@ -7,7 +7,9 @@
         <div class="card res_table">
             <div class="card-header">
                 @unless (\Request::route()->getName()=='admin.user-customer.custom.index')
-                    <a href="{{route('admin.user-customer.create')}}" class="btn btn-primary my-2">افزودن مشتری جدید</a>
+                    @can('user_customer_create')
+                        <a href="{{route('admin.user-customer.create')}}" class="btn btn-primary my-2">افزودن مشتری جدید</a>
+                    @endcan
                 @endunless
             </div>
             <div class="card-body pt-2">
@@ -20,7 +22,7 @@
                             <th>تعداد تکرار خرید انجام شده</th>
                             <th>نوع مشتری</th>
                             <th>تعداد ارجاعی گرفته شده</th>
-                            <th>تاریخ پیگیری بعدی</th>
+                            <th>تاریخ ثبت</th>
                             <th>توضیحات</th>
                             <th>عملیات</th>
                         </tr>
@@ -31,7 +33,7 @@
                                     <td>{{$key+1}}</td>
                                     <td>{{'gtedX'.$item->id}}</td>
                                     <td>{{$item->name}}</td>
-                                    <td>{{count($item->customer_factors) + $item->factor_count}}</td>
+                                    <td>{{$item->customer_factors->count() + $item->factor_count}}</td>
                                     <td>{{$item->grade(count($item->customer_factors) + $item->factor_count)}}</td>
                                     <td>{{count($item->referrer_users)}}</td>
                                     <td>{{$item->time}}</td>
@@ -40,8 +42,12 @@
                                         data-content="{{ $item->description??'___' }}">نمایش توضیحات</a>
                                     </td>
                                     <td class="text-center">
-                                        <a href="{{route('admin.user-customer-factor.show',$item->id)}}" class="badge bg-info p-1 ml-1">لیست فاکتورها</a>
-                                        <a href="{{route('admin.user-customer-factor.create.factor',$item->id)}}" class="badge bg-success p-1 ml-1">ثبت فاکتور جدید</a>
+                                        @can('user_customer_factor_list')
+                                            <a href="{{route('admin.user-customer-factor.show',$item->id)}}" class="badge bg-info p-1 ml-1">لیست فاکتورها</a>
+                                        @endcan
+                                        @can('user_customer_factor_create')
+                                            <a href="{{route('admin.user-customer-factor.create.factor',$item->id)}}" class="badge bg-success p-1 ml-1">ثبت فاکتور جدید</a>
+                                        @endcan
                                         <a href="javascript:void(0)" onclick="ProfileModal(
                                                 '{{$item->id}}','{{$item->name}}','{{$item->mobile}}'
                                                 ,'{{$item->state?$item->state->name:'__'}}'
@@ -50,12 +56,16 @@
                                                 )" class="badge bg-success ml-1" title="پروفایل" data-toggle="modal" data-target="#profile">
                                             <i class="fa fa-user"></i>
                                         </a>
-                                        <a href="{{route('admin.user-customer.edit',$item->id)}}" class="badge bg-primary ml-1" title="ویرایش">
-                                            <i class="fa fa-edit"></i>
-                                        </a>
-                                        <a href="javascript:void(0);" onclick="del_row('{{$item->id}}')" class="badge bg-danger" title="حذف">
-                                            <i class="fa fa-trash"></i>
-                                        </a>
+                                        @can('user_customer_edit')
+                                            <a href="{{route('admin.user-customer.edit',$item->id)}}" class="badge bg-primary ml-1" title="ویرایش">
+                                                <i class="fa fa-edit"></i>
+                                            </a>
+                                        @endcan
+                                        @can('user_customer_delete')
+                                            <a href="javascript:void(0);" onclick="del_row('{{$item->id}}')" class="badge bg-danger" title="حذف">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
+                                        @endcan
                                     </td>
                                 </tr>
                             @endforeach
@@ -111,7 +121,6 @@
                 }
             })
         }
-
         function del_row(id) {
             Swal.fire({
                 text: 'برای حذف مطمئن هستید؟',

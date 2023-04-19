@@ -36,6 +36,21 @@ class Notification extends Model
         return $notify;
     }
 
+    public static function setItemByUserId($type, $notifiable_type, $notifiable_id, $data, $id) {
+        $timeNow    = \Carbon\Carbon::now();
+        $notify = new Notification();
+        $notify->id                 = Str::random(36);
+        $notify->user_id            = $id;
+        $notify->type               = $type;
+        $notify->notifiable_type    = $notifiable_type;
+        $notify->notifiable_id      = $notifiable_id;
+        $notify->data               = $data;
+        $notify->created_at         = $timeNow;
+        $notify->updated_at         = $timeNow;
+        $notify->save();
+        return $notify;
+    }
+
     public function markAsRead()
     {
         if (is_null($this->read_at)) {

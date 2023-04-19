@@ -13,7 +13,9 @@ class TreeController extends Controller {
         elseif ('single') return 'نمودار';
     }
 
-    public function __construct() { $this->middleware('auth'); }
+    public function __construct() {
+        $this->middleware('permission:user_customer_tree_list', ['only' => ['index']]);
+    }
 
     public function index($id=null) {
         if ($id===null) $id = auth()->user()->id;

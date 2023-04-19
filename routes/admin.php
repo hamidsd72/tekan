@@ -21,7 +21,18 @@ Route::get('query', function () {
     dd($users);
 });
 
-Route::get('/', 'AdminController@index')->name('index');
+Route::get('deactive-user/{id}', function ($id) {
+    if ( auth()->user()->status=='active' ) return redirect()->route('admin.index');
+    $user = \App\User::find($id);
+    $user_fullname = $user->first_name.' '.$user->last_name;
+    return view('auth.deactive_user', compact('user_fullname'));
+})->name('deactive.user');
+
+
+
+
+// Route::get('/', 'AdminController@index')->name('index');
+Route::get('/', 'Target\TargetController@index')->name('index');
 Route::resource('post', 'BlogController');
 Route::get('post/type/{id}', 'BlogController@index')->name('post.index.type');
 Route::get('post/reactivate/{id}', 'BlogController@active')->name('post.reactivate');
@@ -407,6 +418,7 @@ Route::post('pass-ask', 'AskController@pass')->name('pass.to');
 
 
 
+
 // ========================= NEW ROUTES =========================
 // connections -> lists
 Route::resource('connection-list', 'Connection\ListController');
@@ -442,6 +454,7 @@ Route::get('user-customer-report/search', 'CustomerBank\ReportController@search'
 Route::get('user-customer-report/search/bar', 'CustomerBank\ReportController@searchBar')->name('user-customer-report.search.bar');
 Route::get('user-customer-report/custom/index/{id}/{type?}', 'CustomerBank\ReportController@index')->name('user-customer-report.custom.index');
 Route::get('user-customer-report/state/cities/{slug}', 'CustomerBank\ReportController@showCities')->name('user-customer-report.state.cities');
+Route::get('user-customer-report/state/cities/new/{slug}', 'CustomerBank\ReportController@showCitiesNew')->name('user-customer-report.state.cities_new');
 
 // potential_organization -> four_action
 Route::resource('four_action', 'PotentialOrganization\FourActionController');
@@ -449,13 +462,17 @@ Route::get('four_action/index/item/show/{id}/{type?}', 'PotentialOrganization\Fo
 Route::get('four_action/create/{step}', 'PotentialOrganization\FourActionController@create')->name('four_action.custom.create');
 Route::get('four_action/search/chart', 'PotentialOrganization\FourActionController@filter')->name('four_action.custom.filter');
 Route::get('four_action/userslist/show/{type}', 'PotentialOrganization\FourActionController@users')->name('four_action.userslist.show');
- 
+Route::get('four_action/users/send-daily-work/{id?}', 'PotentialOrganization\FourActionController@usersDailyWork')->name('four_action.users-send-daily-work');
+
 // potential_organization -> four_action
 Route::resource('potential-list', 'PotentialOrganization\PotentialController');
+Route::get('potential-list/user/status/reactivate/{id}', 'PotentialOrganization\PotentialController@reactivate')->name('potential-list-user-status-reactivate');
 Route::get('potential-list/index/item/show/{id}/{type?}', 'PotentialOrganization\PotentialController@index')->name('potential-list.item-show.index');
 Route::get('potential-list/organization/list/{id?}', 'PotentialOrganization\PotentialController@list')->name('potential-list.list');
 Route::get('potential-list/report/list/{id}/{type?}', 'PotentialOrganization\PotentialController@report')->name('potential-list.report.list');
 Route::get('potential-list/report/list/filter/{id}/{type}', 'PotentialOrganization\PotentialController@report')->name('potential-list.report.list.filter');
+Route::get('potential-list/report/filter/{id}/{year}/{month}/{type?}', 'PotentialOrganization\PotentialController@next_report_filter')->name('potential-list.filter');
+Route::get('potential-list/potential/follow/{id}/', 'PotentialOrganization\PotentialController@follow')->name('potential-follow');
 
 // potential_organization -> subset
 Route::get('potential/organization/subset/index/show/{id?}', 'PotentialOrganization\SubsetController@index')->name('subset.index');
@@ -463,29 +480,74 @@ Route::get('potential/organization/subset/report/{id?}', 'PotentialOrganization\
 
 // monthly_package -> list
 Route::resource('monthly-package', 'MonthlyPackage\ListController');
+Route::get('monthly-package/coustom/delete/{id}', 'MonthlyPackage\ListController@destroy')->name('monthly-package.delete');
 
 // monthly_package -> report
 Route::get('monthly-package-report', 'MonthlyPackage\ReportController@index')->name('monthly-package-report.index');
-Route::get('monthly-package-report/store/{potential_id}', 'MonthlyPackage\ReportController@store')->name('monthly-package-report.stroe');
+Route::get('monthly-package-report/store/{potential_id}/{pack_id}', 'MonthlyPackage\ReportController@store')->name('monthly-package-report.stroe');
 Route::get('monthly-package-report/update/{id}/{status}', 'MonthlyPackage\ReportController@update')->name('monthly-package-report.update');
 
 Route::resource('organization-member', 'OrganizationMember\OrganizationMemberController');
 Route::resource('organization-member-tree', 'OrganizationMember\TreeController');
+Route::get('organization-member-tree/organization/show/map/{id?}', 'OrganizationMember\TreeController@map')->name('organization-map');
 
 // daily-schedule => quad-performance
 Route::resource('daily-schedule-quad-performance', 'DailySchedule\QuadPerformanceController');
+Route::get('daily-schedule-quad-performance/show/{id}/status/{status}', 'DailySchedule\QuadPerformanceController@show')->name('quad-performance.custom.show.status');
 Route::get('daily-schedule-quad-performance/create/{step}/step', 'DailySchedule\QuadPerformanceController@create')->name('quad-performance.custom.create');
 
 // daily-schedule => reports
 Route::resource('daily-schedule-report', 'DailySchedule\ReportController');
 Route::get('daily-schedule-report-filter', 'DailySchedule\ReportController@filter')->name('daily-schedule-report.filter');
+Route::post('daily-schedule-report-show/users/{type}', 'DailySchedule\ReportController@users')->name('daily-schedule-report.show.users');
 
 // daily-schedule => org-performance
 Route::resource('daily-schedule-org-performance', 'DailySchedule\OrgPerformanceController');
+Route::get('daily-schedule-org-performance/show/{id}/status/{status}', 'DailySchedule\OrgPerformanceController@show')->name('org-performance.custom.show.status');
 Route::get('daily-schedule-org-performance/create/{step}/step', 'DailySchedule\OrgPerformanceController@create')->name('org-performance.custom.create');
 
 // daily-schedule => org-reports
 Route::resource('daily-schedule-org-report', 'DailySchedule\OrgReportController');
 Route::get('daily-schedule-org-report-filter', 'DailySchedule\OrgReportController@filter')->name('daily-schedule-org-report.filter');
+Route::post('daily-schedule-org-report-shoe/users/{type}', 'DailySchedule\OrgReportController@users')->name('daily-schedule-org-report.show.users');
 
+// potential_organization -> potential_report
+// Route::get('potential-report/items/show/{id}', 'PotentialOrganization\PotentialReportController@show')->name('potential-report.items-show');
+Route::get('potential-report/item/{id}/{column}/{status}', 'PotentialOrganization\PotentialReportController@update_report')->name('potential-report.item-update');
+
+// target -> target
+Route::resource('target', 'Target\TargetController');
+Route::get('target/custom/index/{id}', 'Target\TargetController@index')->name('target.custom.index');
+Route::get('target/{id}/{step}/{step2}/date', 'Target\TargetController@index')->name('target.customoze.date.index');
+Route::get('api/v1/target/{id}/filter', 'Target\TargetController@filter')->name('api.target.filter');
+
+// meet -> workshop
+Route::resource('workshop', 'Meet\WorkshopController');
+
+// meet -> description
+Route::resource('workshop-description', 'Meet\DescriptionController');
+
+// meet -> report
+Route::resource('workshop-report', 'Meet\ReportController');
+Route::get('meet/workshop-report/{slug}', 'Meet\ReportController@create')->name('meet.workshop-report.show-by-slug');
+// meet -> learn
+Route::resource('learn', 'Meet\LearnController');
+Route::post('learn/file/delete/{id}', 'Meet\LearnController@destroy_file')->name('learn.file.destroy');
+// meet -> show-learn
+// Route::resource('show-learn', 'Meet\LearnController');
+
+//Access
+Route::resource('permissionCat', 'Access\PermissionCatController');
+Route::resource('permission', 'Access\PermissionController');
+Route::resource('role', 'Access\RoleController');
+
+// role level up
+Route::get('user/level-up', 'UserController@roleLevelUp')->name('user.level-up');
+Route::get('user/level-up-result/{id}/{result}', 'UserController@roleLevelUpResult')->name('user.level-up.result');
+Route::get('user/level-up/request', 'UserController@roleLevelUpRequest')->name('user.level-up.request');
+Route::resource('org-performance-label', 'DailySchedule\OrgPerformanceLabelController');
+
+
+Route::get('plan-game', 'Game\GameController@index')->name('plan.game.index');
 // ========================= END ROUTES =========================
+

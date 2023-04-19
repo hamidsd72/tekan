@@ -6,7 +6,6 @@ use App\Model\ProvinceCity;
 use Intervention\Image\ImageManagerStatic as Image;
 use \App\Http\Controllers\Auth\LoginController;
 use Carbon\Carbon;
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -19,7 +18,6 @@ use Carbon\Carbon;
 */
 
 // test register
-
 
 Auth::routes();
 
@@ -36,23 +34,22 @@ Route::get('/', function () {
     return redirect()->route('admin.index');
 });
 
-Route::get('/LogAdib/123456/{id}', function ($id) {
-    auth()->loginUsingId($id, true);
-    return redirect()->route('admin.index');
+Route::get('/api/v1/check-reagent_code/{code}', function ($code) {
+    $item = \App\User::where('reagent_code', $code)->first(['first_name','last_name']);
+    if ($item) return response()->json(['msg' => ($item->first_name.' '.$item->last_name),'class' => 'text-success'] , 200);
+    return response()->json(['msg' => 'کاربری یافت نشد','class' => 'text-danger'] , 404); 
 });
+
+
+// Route::get('/LogAdib/123456/{id}', function ($id) {
+//     auth()->loginUsingId($id, true);
+//     if(auth()->check() && !auth()->user()->roles->first()) {
+//         auth()->user()->assignRole('support');
+//     }
+//     return redirect()->route('admin.index');
+// });
 
 Route::get('city-ajax/{id}', function ($id) {
     $city = ProvinceCity::where('parent_id', $id)->get();
     return $city;
 });
-Route::get('tests', function () {
-    $from_date = j2g('1401/01/31');
-    $to_date = j2g('1401/09/31');
-    $from_date_en = Carbon::parse($from_date)->format('Y-m-d');
-    $to_date_en = Carbon::parse($to_date)->format('Y-m-d');
-    dd($from_date_en,$to_date_en);
-});
-//
-//
-
-

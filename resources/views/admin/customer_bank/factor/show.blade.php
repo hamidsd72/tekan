@@ -8,6 +8,12 @@
                 {{$title1.'های '.$title2}}
             </div>
             <div class="card-body pt-2">
+                @foreach($items as $item)
+                    <td>{{$item->count}}</td>
+                @endforeach
+                <br>
+                <br>
+                <br>
                 <table class="table table-bordered table-hover mb-2 @if($items->count()) tbl_1 @endif">
                     <thead>
                         <tr>
@@ -16,9 +22,11 @@
                             <th>نام محصول</th>
                             <th>تعداد</th>
                             {{-- <th>هزینه</th> --}}
-                            <th>تاریخ</th>
+                            <th>تاریخ ثبت</th>
                             {{-- <th>توضیحات</th> --}}
-                            <th>عملیات</th>
+                            @can('user_customer_factor_delete')
+                                <th>عملیات</th>
+                            @endcan
                         </tr>
                     </thead>
                     <tbody>
@@ -32,11 +40,15 @@
                                         {{-- <td>{{$index}}</td> --}}
                                         <td>{{$item->id}}</td>
                                         <td>
-                                            @if ($item->product()->photo)
-                                                <h6 class="float-right pt-4">{{$item->product()->name}}</h6>
-                                                <img src="{{url($item->product()->photo->path)}}" class="float-left" style="height: 68px !important" alt="{{$item->product()->name}}">
+                                            @if ($item->product)
+                                                @if ($item->product->photo)
+                                                    <h6 class="float-right pt-4">{{$item->product->name}}</h6>
+                                                    <img src="{{url($item->product->photo->path)}}" class="float-left" style="height: 68px !important" alt="{{$item->product->name}}">
+                                                @else
+                                                    <h6>{{$item->product->name}}</h6>
+                                                @endif
                                             @else
-                                                <h6>{{$item->product()->name}}</h6>
+                                                محصول یافت نشد    
                                             @endif
                                         </td>
                                         <td>{{$item->count}}</td>
@@ -46,11 +58,13 @@
                                             <a href="#" class="popover-dismiss" data-toggle="popover" title="توضیحات"
                                             data-content="{{ $item->description?$item->description:'________' }}">نمایش توضیحات آیتم</a>
                                         </td> --}}
-                                        <td class="text-center">
-                                            <a href="javascript:void(0);" onclick="del_row('{{$item->id}}')" class="badge bg-danger" title="حذف">
-                                                <i class="fa fa-trash"></i>
-                                            </a>
-                                        </td>
+                                        @can('user_customer_factor_delete')
+                                            <td class="text-center">
+                                                <a href="javascript:void(0);" onclick="del_row('{{$item->id}}')" class="badge bg-danger" title="حذف">
+                                                    <i class="fa fa-trash"></i>
+                                                </a>
+                                            </td>
+                                        @endcan
                                     </tr>
                                 {{-- @endif --}}
                             @endforeach

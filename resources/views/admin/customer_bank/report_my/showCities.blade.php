@@ -11,7 +11,7 @@
                         <tr>
                             <th>#</th>
                             <th>نام شهر</th>
-                            <th>تعداد مشتری</th>
+                            <th>{{$name}}</th>
                         </tr>
                     </thead>
                     <tbody>

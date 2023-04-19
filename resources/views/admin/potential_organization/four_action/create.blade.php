@@ -18,8 +18,9 @@
                         <a href="{{ route('admin.four_action.custom.create',$step+1) }}" class="text-primary h6">قبل >></a>
                     </div>
                 </div>
-
+                
                 <div class="py-lg-4 col-md-6 col-lg-3">
+                    <a href="{{ route('admin.four_action.users-send-daily-work') }}" class="btn btn-primary col-12 m-0 mb-3">بررسی روزانه لیست پتانسیل</a>
                     <div class="form-group">
                         {{ Form::label('four_action', '۴ اقدام *') }}
                         {{ Form::number('four_action',0, array('class' => 'form-control' ,'required')) }}
@@ -41,8 +42,9 @@
                         {{ Form::number('workshop_routine',0, array('class' => 'form-control' ,'required')) }}
                     </div>
                 </div>
-                {{ Form::button('افزودن', array('type' => 'submit', 'class' => 'btn btn-success mx-3')) }}
-                <a href="{{ URL::previous() }}" class="btn btn-secondary m-0">بازگشت</a>
+                {{ Form::button('افزودن', array('type' => 'submit', 'class' => 'btn btn-success')) }}
+                <a href="{{ URL::previous() }}" class="btn btn-secondary m-0 mx-3">بازگشت</a>
+
             {{ Form::close() }}
         </div>
     </div>

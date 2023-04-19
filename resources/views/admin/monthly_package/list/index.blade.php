@@ -5,8 +5,9 @@
     <section class="container-fluid">
         <div class="card res_table">
             <div class="card-header">
-                <a href="#" class="btn btn-primary my-2" data-toggle="modal" data-target="#createItem">افزودن طرح</a>
-                <h6 class="text-danger pt-1">درصورت فعالسازی هر آیتم اطلاعات آیتم قبل غیرفعال میشود</h6>
+                @can('month_package_create')
+                    <a href="#" class="btn btn-primary my-2" data-toggle="modal" data-target="#createItem">افزودن طرح</a>
+                @endcan
             </div>
             <div class="card-body pt-2">
                 <table class="table table-bordered table-hover mb-2 @if($items->count()) tbl_1 @endif">
@@ -15,9 +16,11 @@
                             <th>#</th>
                             <th>عنوان</th>
                             <th>وضعیت</th>
-                            @if(count($items)>0)
-                                <th>عملیات</th>
-                            @endif
+                            @can('month_package_edit')
+                                @if(count($items)>0)
+                                    <th>عملیات</th>
+                                @endif
+                            @endcan
                         </tr>
                     </thead>
                     <tbody>
@@ -26,11 +29,14 @@
                                 <td>{{$index+1}}</td>
                                 <td>{{$item->title}}</td>
                                 <td class="{{$item->status=='active'?'text-success':'text-danger'}}">{{$item->status=='active'?'فعال':'غیرفعال'}}</td>
-                                <td class="text-center">
-                                    <a href="#" class="badge bg-primary" title="ویرایش" data-toggle="modal" data-target="#editItem{{$item->id}}">
-                                        <i class="fa fa-edit"></i>
-                                    </a>
-                                </td>
+                                @can('month_package_edit')
+                                    <td class="text-center">
+                                        <a href="#" class="badge bg-primary ml-3" title="ویرایش" data-toggle="modal" data-target="#editItem{{$item->id}}">
+                                            <i class="fa fa-edit"></i>
+                                        </a>
+                                        <a href="{{route('admin.monthly-package.delete',$item->id)}}" onclick="confirm('برای حذف مطمئن هستید؟')" class="badge bg-danger mx-1"><i class="fa fa-trash"></i> </a>
+                                    </td>
+                                @endcan
                             </tr>
                         @endforeach
                     </tbody>
@@ -95,8 +101,11 @@
         </div>
     @endforeach
 
-    @if ($active)
-        <script>alert('تعداد '+ '{{$active}}' +' گزارش درانتظار بررسی از طرح جاری وجود دارد و با تغییر طرح غیرفعال میشوند')</script>
-    @endif
+    {{-- @can('month_package_edit')
+        @if ($active)
+            <script>alert('تعداد '+ '{{$active}}' +' گزارش درانتظار بررسی از طرح جاری وجود دارد و با تغییر طرح غیرفعال میشوند')</script>
+        @endif
+    @endcan --}}
+
 @endsection
 

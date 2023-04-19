@@ -1,29 +1,4 @@
 @extends('layouts.admin')
-<style>
-    #map-page {
-        max-width: 100%;
-        overflow: auto;
-    }
-    #map-page a path {
-        fill: #c2c7d0;
-    }
-    #map-page a.activate path {
-        fill: teal;
-    }
-    #map-page a:hover path {
-        fill: teal;
-    }
-    #map-page a>path {
-        transition: 200ms;
-        transition-timing-function: ease-in-out;
-        -webkit-transition: 200ms;
-        -webkit-transition-timing-function: ease-in-out;
-        stroke: #e9ecef;
-        stroke-width: 1px;
-        stroke-linejoin: round;
-        cursor: pointer
-    }
-</style>
 @section('content')
   <section id="chart" class="container-fluid">
     <div class="card res_table">
@@ -32,61 +7,62 @@
       </div>
 
       <div class="card-body">
-
         {{-- نمودار اولی --}}
         <form action="{{route('admin.user-customer-report.search')}}" id="form_req_year" method="get" class="mx-2">
-          <div class="row" style="max-width: 300px;">
-            <div class="col-auto p-0">
-              <input type="number" name="year" id="chartYear" placeholder="سال مورد نظر" min="1300"
-                     max="{{intVal(my_jdate(\Carbon\Carbon::now(),'Y'))}}"
-                     class="form-control text-center" autocomplete="off"
-                     value="{{request()->year??intVal(my_jdate(\Carbon\Carbon::now(),'Y'))}}" required>
+            <div class="row" style="max-width: 200px;">
+                <input type="hidden" name="id" value="{{$id}}">
+                <div class="col-auto p-0">
+                    <input type="number" name="year" id="chartYear" placeholder="سال مورد نظر" min="1300"
+                        max="{{intVal(my_jdate(\Carbon\Carbon::now(),'Y'))}}"
+                        class="form-control text-center" autocomplete="off"
+                        value="{{request()->year??intVal(my_jdate(\Carbon\Carbon::now(),'Y'))}}" required>
+                </div>
+                <div class="col-auto p-0">
+                    <button class="btn btn-primary btn_click" type="submit">جستجو</button>
+                </div>
             </div>
-            <div class="col-auto p-0">
-              <button class="btn btn-primary btn_click" type="submit">جستجو</button>
-            </div>
-          </div>
         </form>
 
-        <div class="my-5"></div>
-        <div class="col-12" id="data_new">
-          <canvas style="max-height: 400px;" id="myChart"></canvas>
+        <div class="col-12 mt-5 chart-scrollable" id="data_new">
+            <div class="frame">
+                <canvas id="myChart"></canvas>
+            </div>
         </div>
-
         {{-- نمودار تعداد فروش هر محصول --}}
-        <form action="{{route('admin.user-customer-report.search.bar')}}" id="third_form_req" method="get" class="mx-2 pt-5">
-            <div class="row bg-cu" style="max-width: 234px;">
-                <div class="col-auto p-0">
+        {{-- <form action="{{route('admin.user-customer-report.search.bar')}}" id="third_form_req" method="get" class="mx-2 pt-5">
+            <div class="row bg-cu my-0" style="max-width: 260px;">
+                <div class="col p-0">
                     <input type="hidden" name="type" value="product">
                     <input type="text" name="start_date" id="startDate" placeholder="بازه شروع" value="{{num2fa($start)}}" class="form-control text-center date_p1" autocomplete="off" readonly required>
                 </div>
-                <div class="col-auto p-0">
+                <div class="col p-0">
                     <input type="text" name="end_date" id="endDate" placeholder="بازه پایان" value="{{num2fa(g2j(date('Y-m-d'),'Y/m/d'))}}" class="form-control text-center date_p1" autocomplete="off" readonly required>
                 </div>
                 <div class="col-auto p-0">
                     <button class="btn btn-primary btn_click" type="submit">جستجو</button> 
                 </div>
             </div>
-        </form>
+        </form> --}}
         <div class="col-12">
-            <canvas style="max-height: 400px;" id="productChart"></canvas>
+            {{-- <canvas id="productChart"></canvas> --}}
         </div>
 
         <form action="{{route('admin.user-customer-report.search.bar')}}" id="four_form_req" method="get" class="mx-2 pt-5">
-            <div class="row bg-cu" style="max-width: 394px;">
-                <div class="col-auto p-0">
-                    <input type="hidden" name="type" value="category">
+            <div class="row bg-cu" style="max-width: 300px;">
+                <input type="hidden" name="id" value="{{$id}}">
+                <input type="hidden" name="type" value="category">
+                {{-- <div class="col p-0">
                     <select name="category_name" id="category_name" class="form-control" style="background: none !important;height: 46px !important;border: none !important;" required>
                         <option value="">انتخاب دسته بندی</option>
                         @foreach ($category_chart_bar_sum_buy as $category)
                             <option value="{{$category}}">{{$category}}</option>
                         @endforeach
                     </select>
-                </div>
-                <div class="col-auto p-0">
+                </div> --}}
+                <div class="col p-0">
                     <input type="text" name="start_date" id="startDate" placeholder="بازه شروع" value="{{num2fa($start)}}" class="form-control text-center date_p1" autocomplete="off" readonly required>
                 </div>
-                <div class="col-auto p-0">
+                <div class="col p-0">
                     <input type="text" name="end_date" id="endDate" placeholder="بازه پایان" value="{{num2fa(g2j(date('Y-m-d'),'Y/m/d'))}}" class="form-control text-center date_p1" autocomplete="off" readonly required>
                 </div>
                 <div class="col-auto p-0">
@@ -95,10 +71,29 @@
             </div>
         </form>
         {{-- نمودار دسته بندی های محصولات --}}
-        <div class="col-12">
-            <canvas style="max-height: 400px;" id="categoryChart"></canvas>
+        <div class="col-12 chart-scrollable">
+            {{-- <canvas id="categoryChart"></canvas> --}}
+            <div class="frame">
+                <canvas id="myBarChart"></canvas>
+            </div>
         </div>
         
+        @if ($product_chart_bar_list)
+            <div class="col-12 mt-3">
+                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#accardion1" aria-expanded="false" aria-controls="accardion1">
+                    نمایش جزییات چارت</button>
+                <div class="collapse multi-collapse" id="accardion1">
+                    <div class="card card-body">
+                        <ul class="px-4" id="product_chart_bar_list">
+                            @foreach ($product_chart_bar_list as $index => $item)
+                                <li>{{substr($item, 0, -5)}}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         {{-- نقشه ایران --}}
         <div class="container">
             <div class="text-center pt-4">
@@ -435,114 +430,30 @@
             }
         });
     </script>
-    {{-- نمودار فروش هر محصول --}}
+    
+    {{-- نمودار میله ای جدید --}}
     <script>
-        var productChart
+        var myBarChart
+
+        const barLabels = @json($product_chart_bar_names);
+        const barData = {
+            labels: barLabels,
+            datasets: [{
+                label: 'نمودار تعداد فروش بصورت دسته بندی محصولات',
+                data: @json($product_chart_bar_sum_buy),
+                backgroundColor: [
+                    'rgba(153, 102, 255, 0.2)',
+                ],
+                borderColor: [
+                    'rgb(153, 102, 255)',
+                ],
+                borderWidth: 1
+            }]
+        };
         
-        const labels3 = @json($product_chart_bar_sum_buy);
-        const data3 = {
-            labels: labels3,
-            datasets: [{
-                label: 'نمودار فروش هر محصول',
-                data: @json($product_chart_bar_names),
-                backgroundColor: [
-                    'rgba(54, 162, 235, 0.2)',
-                ],
-                borderColor: [
-                    'rgb(54, 162, 235)',
-                ],
-                borderWidth: 1
-            }]
-        };
-              
-        const config3 = {
+        const barConfig = {
             type: 'bar',
-            data: data3,
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
-                        }
-                    },
-                }
-            },
-        };
-
-        productChart = new Chart(document.getElementById('productChart'), config3);
-
-        $("#third_form_req").validate({
-            submitHandler: function (form) {
-                $.ajax({
-                    url: form.action,
-                    type: form.method,
-                    data: $(form).serialize(),
-                    success: function (next_data_val) {
-                        
-                        const labels3 = next_data_val.product_chart_bar_sum_buy;
-
-                        const data3 = {
-                            labels: labels3,
-                            datasets: [{
-                                label: 'نمودار فروش هر محصول',
-                                data: next_data_val.product_chart_bar_names,
-                                backgroundColor: [
-                                    'rgba(54, 162, 235, 0.2)',
-                                ],
-                                borderColor: [
-                                    'rgb(54, 162, 235)',
-                                ],
-                                borderWidth: 1
-                            }]
-                        };
-                        
-                        productChart.destroy();
-
-                        const config3 = {
-                            type: 'bar',
-                            data: data3,
-                            options: {
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        ticks: {
-                                            stepSize: 1
-                                        }
-                                    }
-                                }
-                            },
-                        };
-                        productChart = new Chart(document.getElementById('productChart'), config3);
-
-                    }
-                });
-            }
-        });
-    </script>
-    {{-- نمودار دسته بندی های محصولات --}}
-    <script>
-        var categoryChart
-
-        const labels4 = @json($category_chart_bar_sum_buy);
-        const data4 = {
-            labels: labels4,
-            datasets: [{
-                label: 'نمودار تعداد محصول دسته بندی ها',
-                data: @json($category_chart_bar_names),
-                backgroundColor: [
-                    'rgba(54, 162, 235, 0.2)',
-                ],
-                borderColor: [
-                    'rgb(54, 162, 235)',
-                ],
-                borderWidth: 1
-            }]
-        };
-
-        const config4 = {
-            type: 'bar',
-            data: data4,
+            data: barData,
             options: {
                 scales: {
                     y: {
@@ -554,7 +465,8 @@
                 }
             },
         };
-        categoryChart = new Chart(document.getElementById('categoryChart'), config4);
+
+        myBarChart = new Chart(document.getElementById('myBarChart'),barConfig);
 
         $("#four_form_req").validate({
             submitHandler: function (form) {
@@ -563,29 +475,40 @@
                     type: form.method,
                     data: $(form).serialize(),
                     success: function (fourData) {
-                        console.log(fourData);
-                        const labels4 = fourData.chart_bar_sum_buy;
 
-                        const data4 = {
-                            labels: labels4,
+                        var chart_bar_list  = fourData.chart_bar_list;
+                        var chart_bar_names = fourData.chart_bar_names;
+                        var ul = document.getElementById('product_chart_bar_list');
+                        ul.innerHTML = '';
+
+                        for (let index = 0; index < chart_bar_list.length; index++) {
+                            var item = `${chart_bar_names[index]} ${chart_bar_list[index]}`;
+                            ul.insertAdjacentHTML("beforeend",
+                                `<li>${item}</li>`    
+                            );
+                        }
+
+                        const barLabels = fourData.chart_bar_names;
+                        const barData = {
+                            labels: barLabels,
                             datasets: [{
-                                label: 'نمودار تعداد محصولات دسته بندی انتخاب شده',
-                                data: fourData.chart_bar_names,
+                                label: 'نمودار تعداد فروش بصورت دسته بندی محصولات',
+                                data: fourData.chart_bar_sum_buy,
                                 backgroundColor: [
-                                    'rgba(54, 162, 235, 0.2)',
+                                    'rgba(153, 102, 255, 0.2)',
                                 ],
                                 borderColor: [
-                                    'rgb(54, 162, 235)',
+                                    'rgb(153, 102, 255)',
                                 ],
                                 borderWidth: 1
                             }]
                         };
                         
-                        categoryChart.destroy();
+                        myBarChart.destroy();
 
-                        const config4 = {
+                        const barConfig = {
                             type: 'bar',
-                            data: data4,
+                            data: barData,
                             options: {
                                 scales: {
                                     y: {
@@ -597,11 +520,218 @@
                                 }
                             },
                         };
-                        categoryChart = new Chart(document.getElementById('categoryChart'), config4);
 
+                        myBarChart = new Chart(document.getElementById('myBarChart'),barConfig);
                     }
                 });
             }
         });
     </script>
 @endsection
+
+
+{{-- const barLabels = ['one','two','tree'];
+        const barData = {
+            labels: barLabels,
+            datasets: [{
+                label: `گزارش عملکرد شخصی ۴×۱ سازمانی`,
+                data: [10,12,15],
+                backgroundColor: [
+                    'rgba(153, 102, 255, 0.2)',
+                ],
+                borderColor: [
+                    'rgb(153, 102, 255)',
+                ],
+                borderWidth: 1
+            },
+            {
+                label: `گزارش عملکرد شخصی ۴×۱ سازمانی دوم`,
+                data: [6,7,9],
+                backgroundColor: [
+                    'red',
+                ],
+                borderColor: [
+                    'blue',
+                ],
+                borderWidth: 1
+            }]
+        }; --}}
+
+        {{-- let set_year  = '{{my_jdate(\Carbon\Carbon::today()->format('Y'),'Y')}}';
+        let set_month = '{{$month}}'; --}}
+
+
+
+
+        
+
+{{-- نمودار دسته بندی های محصولات --}}
+{{-- <script>
+    var categoryChart
+
+    const labels4 = @json($category_chart_bar_sum_buy);
+    const data4 = {
+        labels: labels4,
+        datasets: [{
+            label: 'نمودار تعداد محصول دسته بندی ها',
+            data: @json($category_chart_bar_names),
+            backgroundColor: [
+                'rgba(54, 162, 235, 0.2)',
+            ],
+            borderColor: [
+                'rgb(54, 162, 235)',
+            ],
+            borderWidth: 1
+        }]
+    };
+
+    const config4 = {
+        type: 'bar',
+        data: data4,
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        },
+    };
+    categoryChart = new Chart(document.getElementById('categoryChart'), config4);
+
+    $("#four_form_req").validate({
+        submitHandler: function (form) {
+            $.ajax({
+                url: form.action,
+                type: form.method,
+                data: $(form).serialize(),
+                success: function (fourData) {
+                    console.log(fourData);
+                    const labels4 = fourData.chart_bar_sum_buy;
+
+                    const data4 = {
+                        labels: labels4,
+                        datasets: [{
+                            label: 'نمودار تعداد محصولات دسته بندی انتخاب شده',
+                            data: fourData.chart_bar_names,
+                            backgroundColor: [
+                                'rgba(54, 162, 235, 0.2)',
+                            ],
+                            borderColor: [
+                                'rgb(54, 162, 235)',
+                            ],
+                            borderWidth: 1
+                        }]
+                    };
+                    
+                    categoryChart.destroy();
+
+                    const config4 = {
+                        type: 'bar',
+                        data: data4,
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1
+                                    }
+                                }
+                            }
+                        },
+                    };
+                    categoryChart = new Chart(document.getElementById('categoryChart'), config4);
+
+                }
+            });
+        }
+    });
+</script> --}}
+
+{{-- نمودار فروش هر محصول --}}
+{{-- <script>
+    var productChart
+    
+    const labels3 = @json($product_chart_bar_sum_buy);
+    const data3 = {
+        labels: labels3,
+        datasets: [{
+            label: 'نمودار فروش هر محصول',
+            data: @json($product_chart_bar_names),
+            backgroundColor: [
+                'rgba(54, 162, 235, 0.2)',
+            ],
+            borderColor: [
+                'rgb(54, 162, 235)',
+            ],
+            borderWidth: 1
+        }]
+    };
+          
+    const config3 = {
+        type: 'bar',
+        data: data3,
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                },
+            }
+        },
+    };
+
+    productChart = new Chart(document.getElementById('productChart'), config3);
+
+    $("#third_form_req").validate({
+        submitHandler: function (form) {
+            $.ajax({
+                url: form.action,
+                type: form.method,
+                data: $(form).serialize(),
+                success: function (next_data_val) {
+                    
+                    const labels3 = next_data_val.product_chart_bar_sum_buy;
+
+                    const data3 = {
+                        labels: labels3,
+                        datasets: [{
+                            label: 'نمودار فروش هر محصول',
+                            data: next_data_val.product_chart_bar_names,
+                            backgroundColor: [
+                                'rgba(54, 162, 235, 0.2)',
+                            ],
+                            borderColor: [
+                                'rgb(54, 162, 235)',
+                            ],
+                            borderWidth: 1
+                        }]
+                    };
+                    
+                    productChart.destroy();
+
+                    const config3 = {
+                        type: 'bar',
+                        data: data3,
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1
+                                    }
+                                }
+                            }
+                        },
+                    };
+                    productChart = new Chart(document.getElementById('productChart'), config3);
+
+                }
+            });
+        }
+    });
+</script> --}}

@@ -4,27 +4,55 @@
 @section('content')
     <section class="container-fluid">
         <div class="card res_table">
-            <div class="card-header">{{$title2}}</div>
+            <div class="card-header">{{$title2}}
+            {{isset($following)}}
+            </div>
             <div class="card-body pt-2"> 
-                <table class="table table-bordered table-hover mb-2 @if($items->count()) tbl_1 @endif">
+                <table class="table table-bordered table-hover mb-2 @if($items) tbl_1 @endif">
                     <thead> 
                         <tr>
                             <th>#</th>
                             <th>نام و نام خانوادگی</th>
-                            <th>برنامه روزانه</th>
-                            <th>گزارش ۴×۱ شخصی</th>
-                            <th>گزارش عملکرد شخصی برای سازمان</th>
-                            <th>مشتریان شخصی</th>
-                            <th>گزارش مشتریان شخصی</th>
-                            <th>مشتریان سازمان</th>
-                            <th>گزارش مشتریان سازمان</th>
-                            <th>لیست پتانسیل شخصی</th>
-                            <th>گزارش لیست پتانسیل شخصی</th>
-                            <th>لیست پتانسیل سازمان</th>
-                            <th>گزارش لیست پتانسیل سازمان</th>
-                            <th>عملکرد روزانه سازمان</th>
-                            <th>گزارش عملکرد روزانه سازمان</th>
+                            @can('daily_schedule_4_1_list')
+                              <th>برنامه روزانه</th>
+                            @endcan
+                            @can('daily_schedule_4_1_report_list')
+                              <th>گزارش ۴×۱ شخصی</th>
+                            @endcan
+                            @can('daily_schedule_org_report_list')
+                              <th>گزارش عملکرد شخصی برای سازمان</th>
+                            @endcan
+                            @can('user_customer_list')
+                              <th>مشتریان شخصی</th>
+                            @endcan
+                            @can('user_customer_report_list')
+                              <th>گزارش مشتریان شخصی</th>
+                            @endcan
+                            @can('user_customer_org_list')
+                              <th>مشتریان سازمان</th>
+                            @endcan
+                            @can('user_customer_org_report_list')
+                              <th>گزارش مشتریان سازمان</th>
+                            @endcan
+                            @can('potential_list')
+                              <th>لیست پتانسیل شخصی</th>
+                            @endcan
+                            @can('potential_report_list')
+                              <th>گزارش لیست پتانسیل شخصی</th>
+                            @endcan
+                            @can('potential_org_list')
+                              <th>لیست پتانسیل سازمان</th>
+                            @endcan
+                            @can('potential_org_report_list')
+                              <th>گزارش لیست پتانسیل سازمان</th>
+                            @endcan
+                            @can('four_action_report_list')
+                              <th>گزارش عملکرد روزانه سازمان</th>
+                            @endcan
                             <th>پروفایل شخصی</th>
+                            @if (isset($following))
+                              <th>افزودن به پتانسیل من</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -32,24 +60,51 @@
                             <tr>
                                 <td>{{$index+1}}</td>
                                 <td>
-                                    @if ($item->user->my_potentials()->count())
-                                        <a href="{{route('admin.organization-member.show',$item->name)}}" target="_blank">{{$item->name?$item->full_name():'__________'}}</a>
-                                    @else{{$item->name?$item->full_name():'__________'}}@endif
+                                    {{-- @if ($item->user->my_potentials1()->count()) --}}
+                                        <a href="{{route('admin.organization-member.show',$item->name)}}" target="_blank" @if($item->user->status=='deactive') class="text-danger" @endif>{{$item->name?$item->full_name():'__________'}}</a>
+                                    {{-- @else{{$item->name?$item->full_name():'__________'}}@endif --}}
                                 </td>
-                                <td><a href="{{route('admin.daily-schedule-quad-performance.show',$item->name)}}" target="_blank">نمایش</a></td>
-                                <td><a href="{{route('admin.daily-schedule-report.show',$item->name)}}" target="_blank">نمایش</a></td>
-                                <td>__________</td>
-                                <td><a href="{{route('admin.user-customer.custom.index',$item->name)}}" target="_blank">نمایش</a></td>
-                                <td><a href="{{route('admin.user-customer-report.custom.index',$item->name)}}" target="_blank">نمایش</a></td>
-                                <td><a href="{{route('admin.subset.index',$item->name)}}" target="_blank">نمایش</a></td>
-                                <td><a href="{{route('admin.subset.report',$item->name)}}" target="_blank">نمایش</a></td>
-                                <td><a href="{{route('admin.potential-list.item-show.index',$item->name)}}" target="_blank">نمایش</a></td>
-                                <td><a href="{{route('admin.potential-list.report.list',$item->name)}}" target="_blank">نمایش</a></td>
-                                <td><a href="{{route('admin.potential-list.list',$item->name)}}" target="_blank">نمایش</a></td>
-                                <td><a href="{{route('admin.potential-list.report.list',[$item->name,'all'])}}" target="_blank">نمایش</a></td>
-                                <td>__________</td>
-                                <td><a href="{{route('admin.four_action.item-show.index',[$item->name,'all'])}}" target="_blank">نمایش</a></td>
+                                @can('daily_schedule_4_1_list')
+                                  <td><a href="{{route('admin.target.custom.index',$item->name)}}" target="_blank">نمایش</a></td>
+                                @endcan
+                                @can('daily_schedule_4_1_report_list')
+                                  <td><a href="{{route('admin.daily-schedule-report.show',$item->name)}}" target="_blank">نمایش</a></td>
+                                @endcan
+                                @can('daily_schedule_org_report_list')
+                                  <td><a href="{{route('admin.daily-schedule-org-report.show',$item->name)}}" target="_blank">نمایش</a></td>
+                                @endcan
+                                @can('user_customer_list')
+                                  <td><a href="{{route('admin.user-customer.custom.index',$item->name)}}" target="_blank">نمایش</a></td>
+                                @endcan
+                                @can('user_customer_report_list')
+                                  <td><a href="{{route('admin.user-customer-report.custom.index',$item->name)}}" target="_blank">نمایش</a></td>
+                                @endcan
+                                @can('user_customer_org_list')
+                                  <td><a href="{{route('admin.subset.index',$item->name)}}" target="_blank">نمایش</a></td>
+                                @endcan
+                                @can('user_customer_org_report_list')
+                                  <td><a href="{{route('admin.subset.report',$item->name)}}" target="_blank">نمایش</a></td>
+                                @endcan
+                                @can('potential_list')
+                                  <td><a href="{{route('admin.potential-list.item-show.index',$item->name)}}" target="_blank">نمایش</a></td>
+                                @endcan
+                                @can('potential_report_list')
+                                  <td><a href="{{route('admin.potential-list.report.list',$item->name)}}" target="_blank">نمایش</a></td>
+                                @endcan
+                                @can('potential_org_list')
+                                  <td><a href="{{route('admin.potential-list.list',$item->name)}}" target="_blank">نمایش</a></td>
+                                @endcan
+                                @can('potential_org_report_list')
+                                  <td><a href="{{route('admin.potential-list.report.list',[$item->name,'all'])}}" target="_blank">نمایش</a></td>
+                                @endcan
+                                @can('four_action_report_list')
+                                  <td><a href="{{route('admin.four_action.item-show.index',[$item->name,'all'])}}" target="_blank">نمایش</a></td>
+                                @endcan
                                 <td><a href="#" class="bg-info p-1 px-2 rounded" data-toggle="modal" data-target="#myModal{{$item->id}}">نمایش</a></td>
+                                @if (isset($following))
+                                  @php $follow = $following->where('potential_id',$item->user_id)->count(); @endphp
+                                  <td><a href="{{route('admin.potential-follow',$item->user_id) }}" class="bg-{{$follow ? 'danger' : 'success' }} p-1 px-2 rounded" ><i class="fa fa-user-plus"></i></a></td>
+                                @endif
                             </tr>
                         @endforeach
                     </tbody>
@@ -57,7 +112,7 @@
             </div>
         </div>
     </section>
-  
+
     @foreach($items as $item)
         <div class="modal" id="myModal{{$item->id}}">
             <div class="modal-dialog modal-lg">
@@ -75,7 +130,37 @@
 
                             <div class="row my-0">
                 
-                              <div class="col-lg-6">
+                              @if ($item->user)
+                                <div class="col-lg-6">
+                                  <div class="form-group">
+                                    {{ Form::label('firstname', 'نام و نام خانوادگی') }}
+                                    <input class="form-control " type="text" name="firstname" id="firstname" value="{{$item->user->firstname.' '.$item->user->lastname}}" readonly>
+                                  </div>
+                                </div>
+                  
+                                <div class="col-lg-6">
+                                  <div class="form-group">
+                                    {{ Form::label('mobile', 'موبایل') }}
+                                    <input class="form-control " type="text" name="mobile" id="mobile" value="{{$item->user->mobile}}" readonly>
+                                  </div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                  <div class="form-group">
+                                    {{ Form::label('state', 'استان') }}
+                                    <input class="form-control " type="text" name="state" id="state" value="{{$item->user->state?$item->user->state->name:'ــــــــــ'}}" readonly>
+                                  </div>
+                                </div>
+                  
+                                <div class="col-lg-6">
+                                  <div class="form-group">
+                                    {{ Form::label('city', 'شهر') }}
+                                    <input class="form-control " type="text" name="city" id="city" value="{{$item->user->city?$item->user->city->name:'ــــــــــ'}}" readonly>
+                                  </div>
+                                </div>
+                              @endif
+                              {{-- <div class="col-lg-6">
+                                <hr>
                                 <div class="form-group">
                                   {{ Form::label('hadaf_gozari_shakhsi', 'هدف گذاری فروش شخصی') }}
                                   <input class="form-control " type="text" name="hadaf_gozari_shakhsi" id="hadaf_gozari_shakhsi" value="{{$item->hadaf_gozari_shakhsi?$item->hadaf_gozari_shakhsi:'ــــــــــ'}}" readonly>
@@ -140,7 +225,7 @@
                                   {{ Form::label('present_ta_estage', 'پرزنت تا استیج') }}
                                   <input class="form-control " type="text" name="present_ta_estage" id="present_ta_estage" value="{{$item->present_ta_estage?$item->present_ta_estage:'ــــــــــ'}}" readonly>
                                 </div>
-                              </div>
+                              </div> --}}
 
                             </div>
                             

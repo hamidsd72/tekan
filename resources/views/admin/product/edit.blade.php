@@ -9,21 +9,30 @@
                     <div class="row">
                         <div class="col-lg-6">
                             <div class="form-group">
-                                {{ Form::label('name', '* نام') }}
-                                {{ Form::text('name',null, array('class' => 'form-control' , 'required')) }}
+                                {{ Form::label('category_id', ' دسته بندی') }}
+                                <select class="form-control select2" id="category_id" name="category_id">
+                                    <option value="" selected>انتخاب کنید</option>
+                                    @foreach($categories->where('status','category') as $category)
+                                        <option value="{{$category->id}}" {{$item->category_id == $category->id ? 'selected' : ''}}>{{$category->name}}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                         <div class="col-lg-6">
                             <div class="form-group">
-                                {{ Form::label('category_id', ' دسته بندی') }}
-                                <select class="form-control select2" id="category_id" name="category_id">
+                                {{ Form::label('brand_id', ' برند') }}
+                                <select class="form-control select2" id="brand_id" name="brand_id">
                                     <option value="" selected>انتخاب کنید</option>
-                                    @if($categories->count())
-                                        @foreach($categories as $category)
-                                            <option value="{{$category->id}}" {{$item->category_id == $category->id ? 'selected' : ''}}>{{$category->name}}</option>
-                                        @endforeach
-                                    @endif
+                                    @foreach($categories->where('status','brand') as $brand)
+                                        <option value="{{$brand->id}}" {{$item->brand_id == $brand->id ? 'selected' : ''}}>{{$brand->name}}</option>
+                                    @endforeach
                                 </select>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                {{ Form::label('name', '* نام') }}
+                                {{ Form::text('name',null, array('class' => 'form-control' , 'required')) }}
                             </div>
                         </div>
                         <div class="col-lg-6">

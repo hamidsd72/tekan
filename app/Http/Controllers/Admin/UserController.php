@@ -37,9 +37,90 @@ class UserController extends Controller
         return $settings->paginate;
     }
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->middleware('auth');
+    }
+    public function roleLevelUpRequest() {
+        $role = auth()->user()->roles->first()?auth()->user()->roles->first()->title:null;
+        if ( in_array( $role, ['مدیر','برنامه نویس','حامی الماس - کارآفرین پویا','حامی پلاتین - کارآفرین کوشا','حامی طلایی','حامی نقره ای'] ) ) {
+            switch ( $role ) {
+                case 'حامی الماس - کارآفرین پویا':
+                    $show_level = ['حامی الماس - کارآفرین پویا','حامی پلاتین - کارآفرین کوشا','حامی طلایی','حامی نقره ای','نماینده','نماینده مستقل','پشتیبان'];
+                    break;
+                case 'حامی پلاتین - کارآفرین کوشا':
+                    $show_level = ['حامی پلاتین - کارآفرین کوشا','حامی طلایی','حامی نقره ای','نماینده','نماینده مستقل','پشتیبان'];
+                    break;
+                case 'حامی طلایی':
+                    $show_level = ['حامی طلایی','حامی نقره ای','نماینده','نماینده مستقل','پشتیبان'];
+                    break;
+                case 'حامی نقره ای':
+                    $show_level = ['حامی نقره ای','نماینده','نماینده مستقل','پشتیبان'];
+                    break;
+                default:
+                    $show_level = ['حامی الماس - کارآفرین پویا','حامی پلاتین - کارآفرین کوشا','حامی طلایی','حامی نقره ای','نماینده','نماینده مستقل','پشتیبان'];
+                    break;
+            }
+            $items  = User::whereIn('request_level', $show_level)->whereIn('id', getSubUser([auth()->id()])[2] )->get();
+            return view('admin.access.level_up.index', compact('items'), ['title1' => 'درخواست های ارتقا لول', 'title2' => 'درخواست ارتقا لول']);
+        }
+
+    }
+
+    public function roleLevelUp() {
+        $role = auth()->user()->roles->first()?auth()->user()->roles->first()->title:null;
+        if ( in_array( $role, ['مدیر','برنامه نویس','حامی الماس - کارآفرین پویا'] ) ) {
+            return redirect()->back()->withInput()->with('err_message', 'درخواست برای این رول مجاز نیست');
+        }
+
+        switch ( $role ) {
+            case 'پشتیبان':
+                $level = 'نماینده';
+                break;
+            case 'نماینده':
+                $level = 'نماینده مستقل';
+                break;
+            case 'نماینده مستقل':
+                $level = 'حامی نقره ای';
+                break;
+            case 'حامی نقره ای':
+                $level = 'حامی طلایی';
+                break;
+            case 'حامی طلایی':
+                $level = 'حامی پلاتین - کارآفرین کوشا';
+                break;
+            case 'حامی پلاتین - کارآفرین کوشا':
+                $level = 'حامی الماس - کارآفرین پویا';
+                break;
+            default:
+                $level = 'پشتیبان';
+                break;
+        }
+        auth()->user()->request_level = $level;
+        auth()->user()->update();
+        return redirect()->back()->with('flash_message', 'درخواست با موفقیت ارسال شد');
+    }
+
+    public function roleLevelUpResult($id , $result) {
+        if ( auth()->user()->roles->count() && in_array( auth()->user()->roles->first()->title,
+         ['مدیر','برنامه نویس','حامی الماس - کارآفرین پویا','حامی طلایی','حامی نقره ای','حامی پلاتین - کارآفرین کوشا'] ) ) {
+
+            $user = User::findOrFail($id);
+            if ($user->request_level) {
+                
+                if ($user->getRoleNames()->count()) {
+                    foreach ($user->getRoleNames() as $role_name) $user->removeRole($role_name);
+                }
+                
+                $role = \App\Model\Role::where('title', $user->request_level)->firstOrFail();
+                if ($result=='ok') $user->assignRole($role->name);
+                $user->request_level = null;
+                $user->update();
+                return redirect()->back()->with('flash_message', 'درخواست با موفقیت انجام شد');
+            }
+            
+        }
+
+        return redirect()->back()->withInput()->with('err_message', 'درخواست برای این رول مجاز نیست');
     }
 
     public function userRole(Request $request)
@@ -86,7 +167,7 @@ class UserController extends Controller
         $request->validate([
             'user_id' => 'required',
             'potential_id' => 'required',
-//            'sub_potential' => 'required'
+                //            'sub_potential' => 'required'
         ]);
 
         $user = User::findOrFail($request->user_id);
